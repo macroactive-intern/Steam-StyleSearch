@@ -1,0 +1,157 @@
+"use client";
+
+import { useCallback, useMemo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { FilterSort } from "@/types/game";
+
+const FILTER_KEYS = [
+  "q",
+  "platform",
+  "genre",
+  "tag",
+  "minRating",
+  "maxRating",
+  "yearFrom",
+  "yearTo",
+  "sort",
+  "featured",
+] as const;
+
+export type GameFilterKey = (typeof FILTER_KEYS)[number];
+
+export interface UrlGameFilters {
+  q?: string;
+  platform?: string;
+  genre?: string;
+  tag: string[];
+  minRating?: number;
+  maxRating?: number;
+  yearFrom?: number;
+  yearTo?: number;
+  sort?: FilterSort;
+  featured?: boolean;
+}
+
+type FilterValue = string | number | boolean | readonly string[] | null | undefined;
+
+function readNumber(params: URLSearchParams, key: GameFilterKey): number | undefined {
+  const value = params.get(key);
+
+  if (!value) {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function readBoolean(params: URLSearchParams, key: GameFilterKey): boolean | undefined {
+  const value = params.get(key);
+
+  if (value === "true") {
+    return true;
+  }
+
+  if (value === "false") {
+    return false;
+  }
+
+  return undefined;
+}
+
+function readString(params: URLSearchParams, key: GameFilterKey): string | undefined {
+  return params.get(key)?.trim() || undefined;
+}
+
+function applyParam(params: URLSearchParams, key: GameFilterKey, value: FilterValue) {
+  params.delete(key);
+
+  if (Array.isArray(value)) {
+    value.filter(Boolean).forEach((item) => params.append(key, String(item)));
+    return;
+  }
+
+  if (value === undefined || value === null || value === "") {
+    return;
+  }
+
+  params.set(key, String(value));
+}
+
+function parseFilters(params: URLSearchParams): UrlGameFilters {
+  return {
+    q: readString(params, "q"),
+    platform: readString(params, "platform"),
+    genre: readString(params, "genre"),
+    tag: params.getAll("tag").filter(Boolean),
+    minRating: readNumber(params, "minRating"),
+    maxRating: readNumber(params, "maxRating"),
+    yearFrom: readNumber(params, "yearFrom"),
+    yearTo: readNumber(params, "yearTo"),
+    sort: readString(params, "sort") as FilterSort | undefined,
+    featured: readBoolean(params, "featured"),
+  };
+}
+
+export function useGameFilters() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const filters = useMemo(
+    () => parseFilters(new URLSearchParams(searchParams.toString())),
+    [searchParams],
+  );
+
+  const updateUrl = useCallback(
+    (updates: Partial<Record<GameFilterKey, FilterValue>>) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      for (const [key, value] of Object.entries(updates)) {
+        applyParam(params, key as GameFilterKey, value);
+      }
+
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+
+  const clearFilter = useCallback(
+    (key: GameFilterKey) => updateUrl({ [key]: undefined }),
+    [updateUrl],
+  );
+
+  const clearAll = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    FILTER_KEYS.forEach((key) => params.delete(key));
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const setters = useMemo(
+    () => ({
+      setQ: (value?: string) => updateUrl({ q: value }),
+      setPlatform: (value?: string) => updateUrl({ platform: value }),
+      setGenre: (value?: string) => updateUrl({ genre: value }),
+      setTag: (value: readonly string[]) => updateUrl({ tag: value }),
+      setMinRating: (value?: number) => updateUrl({ minRating: value }),
+      setMaxRating: (value?: number) => updateUrl({ maxRating: value }),
+      setYearFrom: (value?: number) => updateUrl({ yearFrom: value }),
+      setYearTo: (value?: number) => updateUrl({ yearTo: value }),
+      setSort: (value?: FilterSort) => updateUrl({ sort: value }),
+      setFeatured: (value?: boolean) => updateUrl({ featured: value }),
+    }),
+    [updateUrl],
+  );
+
+  return {
+    filters,
+    setters,
+    clearFilter,
+    clearAll,
+  };
+}
