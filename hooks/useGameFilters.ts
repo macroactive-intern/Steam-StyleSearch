@@ -134,6 +134,7 @@ export function useGameFilters() {
 
   const setters = useMemo(
     () => ({
+      setFilters: updateUrl,
       setQ: (value?: string) => updateUrl({ q: value }),
       setPlatform: (value?: string) => updateUrl({ platform: value }),
       setGenre: (value?: string) => updateUrl({ genre: value }),
