@@ -24,6 +24,7 @@ function formatTerm(value: string): string {
 function filtersToSearchValue(filters: UrlGameFilters): string {
   const tokens = [
     filters.platform ? `platform:${formatTerm(filters.platform)}` : undefined,
+    filters.genre ? `genre:${formatTerm(filters.genre)}` : undefined,
     typeof filters.minRating === "number" ? `rating:>${filters.minRating}` : undefined,
     typeof filters.maxRating === "number" ? `rating:<${filters.maxRating}` : undefined,
     filters.yearFrom && filters.yearFrom === filters.yearTo
@@ -40,7 +41,7 @@ export function SearchInput({
   id = "game-search",
   className,
   delay = 300,
-  placeholder = 'Search games or use platform:PC rating:>8 tag:rpg "dark souls"',
+  placeholder = 'Search games or use platform:PC genre:rpg rating:>8 tag:rpg "dark souls"',
 }: SearchInputProps) {
   const { filters, setters } = useGameFilters();
   const urlSearchValue = useMemo(() => filtersToSearchValue(filters), [filters]);
@@ -51,6 +52,7 @@ export function SearchInput({
       JSON.stringify({
         q: filters.q,
         platform: filters.platform,
+        genre: filters.genre,
         tag: filters.tag,
         minRating: filters.minRating,
         maxRating: filters.maxRating,
@@ -85,6 +87,7 @@ export function SearchInput({
         const updates = {
           q: parsed.terms.join(" ") || undefined,
           platform: parsed.filters.platform,
+          genre: parsed.filters.genre,
           tag: parsed.filters.tags,
           minRating: parsed.filters.minRating,
           maxRating: parsed.filters.maxRating,
@@ -121,6 +124,7 @@ export function SearchInput({
     setters.setFilters({
       q: undefined,
       platform: undefined,
+      genre: undefined,
       tag: [],
       minRating: undefined,
       maxRating: undefined,

@@ -38,6 +38,15 @@ describe("parseQuery", () => {
     });
   });
 
+  it("parses genre filters", () => {
+    const result = parseQuery("genre:rpg");
+
+    expect(result.filters).toEqual({
+      tags: [],
+      genre: "rpg",
+    });
+  });
+
   it("parses exact year filters", () => {
     const result = parseQuery("year:2020");
 
@@ -59,12 +68,13 @@ describe("parseQuery", () => {
 
   it("keeps invalid field tokens as search terms while parsing valid filters", () => {
     const result = parseQuery(
-      'platform:PC rating:>8 rating:=7 tag:rpg mood:grim year:2020 "dark souls"',
+      'platform:PC genre:rpg rating:>8 rating:=7 tag:rpg mood:grim year:2020 "dark souls"',
     );
 
     expect(result.filters).toEqual({
       tags: ["rpg"],
       platform: "PC",
+      genre: "rpg",
       minRating: 8,
       yearFrom: 2020,
       yearTo: 2020,

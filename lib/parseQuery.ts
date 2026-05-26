@@ -1,5 +1,6 @@
 export interface ParsedQueryFilters {
   platform?: string;
+  genre?: string;
   tags: string[];
   minRating?: number;
   maxRating?: number;
@@ -116,6 +117,11 @@ function applyFieldToken(token: QueryToken, filters: ParsedQueryFilters) {
     return true;
   }
 
+  if (normalizedField === "genre") {
+    filters.genre = value;
+    return true;
+  }
+
   if (normalizedField === "tag") {
     filters.tags.push(value);
     return true;
@@ -151,12 +157,13 @@ export function parseQuery(query: string): ParsedQuery {
 
 export const parseQueryExamples: readonly ParseQueryExample[] = [
   {
-    input: 'platform:PC rating:>8 tag:rpg "dark souls"',
+    input: 'platform:PC genre:rpg rating:>8 tag:rpg "dark souls"',
     output: {
-      raw: 'platform:PC rating:>8 tag:rpg "dark souls"',
+      raw: 'platform:PC genre:rpg rating:>8 tag:rpg "dark souls"',
       terms: ["dark souls"],
       filters: {
         platform: "PC",
+        genre: "rpg",
         tags: ["rpg"],
         minRating: 8,
       },
@@ -179,8 +186,9 @@ export const parseQueryExamples: readonly ParseQueryExample[] = [
     input: '"space strategy" genre:4x tag:tactical',
     output: {
       raw: '"space strategy" genre:4x tag:tactical',
-      terms: ["space strategy", "genre:4x"],
+      terms: ["space strategy"],
       filters: {
+        genre: "4x",
         tags: ["tactical"],
       },
     },
