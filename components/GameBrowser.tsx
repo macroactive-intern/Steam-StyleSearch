@@ -17,19 +17,7 @@ export interface GameBrowserProps {
 export function GameBrowser({ games }: GameBrowserProps) {
   const { filters } = useGameFilters();
   const filteredGames = useMemo(
-    () =>
-      filterGames(games, {
-        q: filters.q,
-        platform: filters.platform,
-        genre: filters.genre,
-        tag: filters.tag,
-        minRating: filters.minRating,
-        maxRating: filters.maxRating,
-        yearFrom: filters.yearFrom,
-        yearTo: filters.yearTo,
-        featured: filters.featured,
-        sort: filters.sort,
-      }),
+    () => filterGames(games, filters),
     [games, filters],
   );
 
