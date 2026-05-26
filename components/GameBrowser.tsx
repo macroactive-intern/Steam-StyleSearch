@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { FilterPanel } from "@/components/FilterPanel";
+import { SavedFilterPresets } from "@/components/SavedFilterPresets";
 import { SearchInput } from "@/components/SearchInput";
 import { VirtualGameList } from "@/components/VirtualGameList";
 import { useGameFilters } from "@/hooks/useGameFilters";
@@ -44,7 +45,8 @@ export function GameBrowser({ games }: GameBrowserProps) {
       </header>
 
       <div className="grid flex-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="lg:sticky lg:top-6 lg:self-start">
+        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+          <SavedFilterPresets />
           <FilterPanel />
         </aside>
 
