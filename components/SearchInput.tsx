@@ -1,10 +1,9 @@
 "use client";
 
-import { ChangeEvent, KeyboardEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, KeyboardEvent, useCallback, useEffect, useMemo, useRef } from "react";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/hooks/useDebounce";
 import { useGameFilters, type UrlGameFilters } from "@/hooks/useGameFilters";
 import { cn } from "@/lib/utils";
 import { parseQuery } from "@/lib/parseQuery";
@@ -45,8 +44,8 @@ export function SearchInput({
 }: SearchInputProps) {
   const { filters, setters } = useGameFilters();
   const urlSearchValue = useMemo(() => filtersToSearchValue(filters), [filters]);
-  const [value, setValue] = useState(urlSearchValue);
-  const debouncedValue = useDebounce(value, delay);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const pendingUpdateRef = useRef<number | undefined>(undefined);
   const controlledFiltersKey = useMemo(
     () =>
       JSON.stringify({
@@ -61,31 +60,64 @@ export function SearchInput({
     [filters],
   );
 
-  useEffect(() => {
-    const parsed = parseQuery(debouncedValue);
-    const updates = {
-      q: parsed.terms.join(" ") || undefined,
-      platform: parsed.filters.platform,
-      tag: parsed.filters.tags,
-      minRating: parsed.filters.minRating,
-      maxRating: parsed.filters.maxRating,
-      yearFrom: parsed.filters.yearFrom,
-      yearTo: parsed.filters.yearTo,
-    };
+  const clearPendingUpdate = useCallback(() => {
+    if (pendingUpdateRef.current !== undefined) {
+      window.clearTimeout(pendingUpdateRef.current);
+      pendingUpdateRef.current = undefined;
+    }
+  }, []);
 
-    if (JSON.stringify(updates) === controlledFiltersKey) {
-      return;
+  useEffect(() => {
+    clearPendingUpdate();
+
+    if (inputRef.current) {
+      inputRef.current.value = urlSearchValue;
     }
 
-    setters.setFilters(updates);
-  }, [controlledFiltersKey, debouncedValue, setters]);
+    return clearPendingUpdate;
+  }, [clearPendingUpdate, urlSearchValue]);
 
-  function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    setValue(event.target.value);
-  }
+  const scheduleUrlUpdate = useCallback(
+    (nextValue: string) => {
+      clearPendingUpdate();
+      pendingUpdateRef.current = window.setTimeout(() => {
+        const parsed = parseQuery(nextValue);
+        const updates = {
+          q: parsed.terms.join(" ") || undefined,
+          platform: parsed.filters.platform,
+          tag: parsed.filters.tags,
+          minRating: parsed.filters.minRating,
+          maxRating: parsed.filters.maxRating,
+          yearFrom: parsed.filters.yearFrom,
+          yearTo: parsed.filters.yearTo,
+        };
+
+        pendingUpdateRef.current = undefined;
+
+        if (JSON.stringify(updates) === controlledFiltersKey) {
+          return;
+        }
+
+        setters.setFilters(updates);
+      }, delay);
+    },
+    [clearPendingUpdate, controlledFiltersKey, delay, setters],
+  );
+
+  const handleChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      scheduleUrlUpdate(event.target.value);
+    },
+    [scheduleUrlUpdate],
+  );
 
   function handleClear() {
-    setValue("");
+    clearPendingUpdate();
+
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+
     setters.setFilters({
       q: undefined,
       platform: undefined,
@@ -98,7 +130,7 @@ export function SearchInput({
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "Escape" && value) {
+    if (event.key === "Escape" && event.currentTarget.value) {
       event.preventDefault();
       handleClear();
     }
@@ -115,8 +147,9 @@ export function SearchInput({
       />
       <Input
         id={id}
+        ref={inputRef}
         type="search"
-        value={value}
+        defaultValue={urlSearchValue}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
@@ -124,7 +157,7 @@ export function SearchInput({
         autoComplete="off"
         spellCheck={false}
       />
-      {value ? (
+      {urlSearchValue ? (
         <Button
           type="button"
           variant="ghost"
