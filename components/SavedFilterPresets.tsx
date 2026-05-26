@@ -23,9 +23,6 @@ export interface SavedFilterPresetsProps {
   className?: string;
 }
 
-let cachedPresetsJson = "";
-let cachedPresets: FilterPreset[] = EMPTY_PRESETS;
-
 function createPresetId() {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 }
@@ -52,26 +49,16 @@ function getStoredPresets(): FilterPreset[] {
 
   const presetsJson = window.localStorage.getItem(STORAGE_KEY) ?? "[]";
 
-  if (presetsJson === cachedPresetsJson) {
-    return cachedPresets;
-  }
-
   try {
     const parsedPresets = JSON.parse(presetsJson) as FilterPreset[];
-    cachedPresets = Array.isArray(parsedPresets) ? parsedPresets : EMPTY_PRESETS;
-    cachedPresetsJson = presetsJson;
+    return Array.isArray(parsedPresets) ? parsedPresets : EMPTY_PRESETS;
   } catch {
-    cachedPresets = EMPTY_PRESETS;
-    cachedPresetsJson = presetsJson;
+    return EMPTY_PRESETS;
   }
-
-  return cachedPresets;
 }
 
 function saveStoredPresets(presets: FilterPreset[]) {
-  cachedPresets = presets;
-  cachedPresetsJson = JSON.stringify(presets);
-  window.localStorage.setItem(STORAGE_KEY, cachedPresetsJson);
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(presets));
   window.dispatchEvent(new Event(STORAGE_EVENT));
 }
 
