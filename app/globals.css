@@ -128,3 +128,11 @@
     @apply font-sans;
   }
 }
+
+.js-enabled [data-js-enhanced] {
+  display: flex;
+}
+
+.js-enabled [data-no-js-fallback] {
+  display: none;
+}

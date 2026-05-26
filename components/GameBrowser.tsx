@@ -34,7 +34,10 @@ export function GameBrowser({ games }: GameBrowserProps) {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+    <div
+      data-js-enhanced
+      className="mx-auto hidden w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8"
+    >
       <header className="space-y-2">
         <p className="text-sm font-medium text-muted-foreground">
           Steam Style Search
