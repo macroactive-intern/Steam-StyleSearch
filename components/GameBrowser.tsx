@@ -81,9 +81,9 @@ export function GameBrowser({
         <p className="text-sm font-medium text-muted-foreground">
           Steam Style Search
         </p>
-        <h1 className="text-3xl font-semibold tracking-tight">
+        <h2 className="text-3xl font-semibold tracking-tight">
           Game Browser
-        </h1>
+        </h2>
       </header>
 
       <div className="grid flex-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
