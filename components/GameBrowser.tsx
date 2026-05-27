@@ -42,16 +42,13 @@ export function GameBrowser({
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
+    setIsLoading(true);
+    setError(undefined);
 
     try {
-      await Promise.resolve();
-
       if (controller.signal.aborted) {
         return;
       }
-
-      setIsLoading(true);
-      setError(undefined);
 
       const response = await fetch("/api/games", {
         signal: controller.signal,
