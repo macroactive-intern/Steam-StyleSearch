@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { FilterPanel } from "@/components/FilterPanel";
 import { SavedFilterPresets } from "@/components/SavedFilterPresets";
@@ -11,15 +11,66 @@ import { filterGames } from "@/lib/filterGames";
 import type { Game } from "@/types/game";
 
 export interface GameBrowserProps {
-  games: readonly Game[];
+  platforms: string[];
+  genres: string[];
+  tags: string[];
+  releaseYearRange: { min: number; max: number };
 }
 
-export function GameBrowser({ games }: GameBrowserProps) {
+interface GamesResponse {
+  games?: Game[];
+}
+
+export function GameBrowser({
+  platforms,
+  genres,
+  tags,
+  releaseYearRange,
+}: GameBrowserProps) {
   const { filters } = useGameFilters();
+  const [games, setGames] = useState<Game[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | undefined>();
   const filteredGames = useMemo(
     () => filterGames(games, filters),
     [games, filters],
   );
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadGames() {
+      try {
+        const response = await fetch("/api/games", {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("Unable to load games.");
+        }
+
+        const data = (await response.json()) as GamesResponse;
+        setGames(Array.isArray(data.games) ? data.games : []);
+        setError(undefined);
+      } catch (loadError) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setError(
+          loadError instanceof Error ? loadError.message : "Unable to load games.",
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadGames();
+
+    return () => controller.abort();
+  }, []);
 
   return (
     <div
@@ -38,13 +89,32 @@ export function GameBrowser({ games }: GameBrowserProps) {
       <div className="grid flex-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <SavedFilterPresets />
-          <FilterPanel />
+          <FilterPanel
+            platforms={platforms}
+            genres={genres}
+            tags={tags}
+            releaseYearRange={releaseYearRange}
+          />
         </aside>
 
         <main className="min-w-0 space-y-4">
           <SearchInput />
           <ActiveFilterChips />
-          <VirtualGameList games={filteredGames} />
+          {isLoading ? (
+            <section className="flex min-h-64 items-center justify-center rounded-lg border bg-muted/30 p-8 text-center">
+              <p className="text-sm font-medium text-muted-foreground">
+                Loading games...
+              </p>
+            </section>
+          ) : error ? (
+            <section className="flex min-h-64 items-center justify-center rounded-lg border bg-muted/30 p-8 text-center">
+              <p className="text-sm font-medium text-muted-foreground">
+                {error}
+              </p>
+            </section>
+          ) : (
+            <VirtualGameList games={filteredGames} />
+          )}
         </main>
       </div>
     </div>

@@ -15,12 +15,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGameFilters } from "@/hooks/useGameFilters";
-import {
-  getGenres,
-  getPlatforms,
-  getReleaseYearRange,
-  getTags,
-} from "@/lib/games";
 import { cn } from "@/lib/utils";
 import type { FilterSort } from "@/types/game";
 
@@ -33,10 +27,10 @@ const SORT_OPTIONS: Array<{ label: string; value: FilterSort }> = [
 
 export interface FilterPanelProps {
   className?: string;
-  platforms?: string[];
-  genres?: string[];
-  tags?: string[];
-  releaseYearRange?: { min: number; max: number };
+  platforms: string[];
+  genres: string[];
+  tags: string[];
+  releaseYearRange: { min: number; max: number };
 }
 
 function parseNumberValue(value: string): number | undefined {
@@ -57,13 +51,6 @@ export function FilterPanel({
   releaseYearRange,
 }: FilterPanelProps) {
   const { filters, setters, clearAll } = useGameFilters();
-  const platformOptions = useMemo(() => platforms ?? getPlatforms(), [platforms]);
-  const genreOptions = useMemo(() => genres ?? getGenres(), [genres]);
-  const tagOptions = useMemo(() => tags ?? getTags(), [tags]);
-  const yearRange = useMemo(
-    () => releaseYearRange ?? getReleaseYearRange(),
-    [releaseYearRange],
-  );
   const selectedTags = useMemo(() => new Set(filters.tag), [filters.tag]);
 
   function toggleTag(tag: string, checked: boolean) {
@@ -106,7 +93,7 @@ export function FilterPanel({
             <SelectContent>
               <SelectGroup>
                 <SelectItem value="all">All platforms</SelectItem>
-                {platformOptions.map((platform) => (
+                {platforms.map((platform) => (
                   <SelectItem key={platform} value={platform}>
                     {platform}
                   </SelectItem>
@@ -130,7 +117,7 @@ export function FilterPanel({
             <SelectContent>
               <SelectGroup>
                 <SelectItem value="all">All genres</SelectItem>
-                {genreOptions.map((genre) => (
+                {genres.map((genre) => (
                   <SelectItem key={genre} value={genre}>
                     {genre}
                   </SelectItem>
@@ -221,8 +208,8 @@ export function FilterPanel({
             <Input
               id="filter-year-from"
               type="number"
-              min={yearRange.min}
-              max={yearRange.max}
+              min={releaseYearRange.min}
+              max={releaseYearRange.max}
               value={filters.yearFrom ?? ""}
               onChange={(event) =>
                 setters.setYearFrom(parseNumberValue(event.target.value))
@@ -234,8 +221,8 @@ export function FilterPanel({
             <Input
               id="filter-year-to"
               type="number"
-              min={yearRange.min}
-              max={yearRange.max}
+              min={releaseYearRange.min}
+              max={releaseYearRange.max}
               value={filters.yearTo ?? ""}
               onChange={(event) =>
                 setters.setYearTo(parseNumberValue(event.target.value))
@@ -248,7 +235,7 @@ export function FilterPanel({
       <fieldset className="mt-4">
         <legend className="mb-2 text-sm font-medium">Tags</legend>
         <div className="grid max-h-56 gap-2 overflow-auto rounded-lg border p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {tagOptions.map((tag) => (
+          {tags.map((tag) => (
             <Label
               key={tag}
               className="rounded-md px-1 py-1 text-sm font-normal"

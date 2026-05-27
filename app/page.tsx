@@ -1,7 +1,13 @@
 import { Suspense } from "react";
 import { GameBrowser } from "@/components/GameBrowser";
 import { PaginatedGameFallback } from "@/components/PaginatedGameFallback";
-import { getGames } from "@/lib/games";
+import {
+  getGames,
+  getGenres,
+  getPlatforms,
+  getReleaseYearRange,
+  getTags,
+} from "@/lib/games";
 import type { FilterSort, GameFilters } from "@/types/game";
 
 type PageSearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -92,10 +98,15 @@ export default async function Home({
 }: {
   searchParams: PageSearchParams;
 }) {
-  const games = getGames();
   const resolvedSearchParams = await searchParams;
   const page = getPageNumber(resolvedSearchParams);
   const fallbackGames = getGames(getFallbackFilters(resolvedSearchParams));
+  const filterOptions = {
+    platforms: getPlatforms(),
+    genres: getGenres(),
+    tags: getTags(),
+    releaseYearRange: getReleaseYearRange(),
+  };
 
   return (
     <>
@@ -111,7 +122,7 @@ export default async function Home({
         searchParams={resolvedSearchParams}
       />
       <Suspense fallback={null}>
-        <GameBrowser games={games} />
+        <GameBrowser {...filterOptions} />
       </Suspense>
     </>
   );
