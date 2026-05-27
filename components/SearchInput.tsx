@@ -68,6 +68,10 @@ export function SearchInput({
 
   useEffect(() => clearPendingUpdate, [clearPendingUpdate]);
 
+  useEffect(() => {
+    clearPendingUpdate();
+  }, [clearPendingUpdate, urlSearchValue]);
+
   const scheduleUrlUpdate = useCallback(
     (nextValue: string) => {
       clearPendingUpdate();
