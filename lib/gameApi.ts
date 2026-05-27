@@ -31,6 +31,14 @@ function readTags(value: unknown): string[] | undefined {
     .map((tag) => tag.trim());
 }
 
+function readCoverImage(value: unknown): string | undefined {
+  const coverImage = readString(value)?.trim();
+
+  return coverImage?.startsWith("/") || coverImage?.startsWith("https://")
+    ? coverImage
+    : undefined;
+}
+
 export function sanitizeGame(value: unknown): Game | undefined {
   if (!isRecord(value)) {
     return undefined;
@@ -45,7 +53,7 @@ export function sanitizeGame(value: unknown): Game | undefined {
   const rating = readNumber(value.rating);
   const releaseYear = readNumber(value.releaseYear);
   const featured = readBoolean(value.featured);
-  const coverImage = readString(value.coverImage);
+  const coverImage = readCoverImage(value.coverImage);
 
   if (
     !id ||

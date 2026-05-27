@@ -30,10 +30,29 @@ describe("game API payload sanitization", () => {
         { ...validGame, id: 1 },
         { ...validGame, rating: "high" },
         { ...validGame, featured: "true" },
+        { ...validGame, coverImage: "javascript:alert(1)" },
+        { ...validGame, coverImage: "http://example.com/cover.jpg" },
       ],
     });
 
     expect(result.games).toEqual([validGame]);
+  });
+
+  it("allows relative and HTTPS cover image URLs", () => {
+    const httpsGame = {
+      ...validGame,
+      id: "game-2",
+      coverImage: "https://example.com/cover.jpg",
+    };
+
+    const result = sanitizeGamesResponse({
+      games: [
+        { ...validGame, coverImage: " /covers/shadow-circuit.svg " },
+        httpsGame,
+      ],
+    });
+
+    expect(result.games).toEqual([validGame, httpsGame]);
   });
 
   it("keeps games with malformed tag entries and drops only the bad tags", () => {
