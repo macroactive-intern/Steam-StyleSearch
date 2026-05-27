@@ -13,8 +13,8 @@ import {
   getPageNumber,
   type ResolvedPageSearchParams,
 } from "@/lib/pageSearchParams";
-import { filterGames } from "@/lib/filterGames";
 import { JS_ENHANCEMENT_SCRIPT } from "@/lib/progressiveEnhancement";
+import type { GameFilters } from "@/types/game";
 
 type PageSearchParams = Promise<ResolvedPageSearchParams>;
 
@@ -43,6 +43,21 @@ function GameBrowserSuspenseFallback() {
   );
 }
 
+function hasFallbackFilters(filters: GameFilters) {
+  return Boolean(
+    filters.q ||
+      filters.platform ||
+      filters.genre ||
+      filters.tag?.length ||
+      typeof filters.minRating === "number" ||
+      typeof filters.maxRating === "number" ||
+      typeof filters.yearFrom === "number" ||
+      typeof filters.yearTo === "number" ||
+      filters.featured !== undefined ||
+      filters.sort,
+  );
+}
+
 export default async function Home({
   searchParams,
 }: {
@@ -50,11 +65,11 @@ export default async function Home({
 }) {
   const resolvedSearchParams = await searchParams;
   const page = getPageNumber(resolvedSearchParams);
+  const fallbackFilters = getFallbackFilters(resolvedSearchParams);
   const allGames = getGames();
-  const fallbackGames = filterGames(
-    allGames,
-    getFallbackFilters(resolvedSearchParams),
-  );
+  const fallbackGames = hasFallbackFilters(fallbackFilters)
+    ? getGames(fallbackFilters)
+    : allGames;
   const filterOptions = {
     initialGames: allGames,
     platforms: PLATFORMS,
