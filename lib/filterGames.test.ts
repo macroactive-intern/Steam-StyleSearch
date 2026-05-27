@@ -84,6 +84,14 @@ describe("filterGames", () => {
     expect(ids(result)).toEqual(["shadow-dungeon"]);
   });
 
+  it("treats an empty text search like no text search", () => {
+    const emptyQueryResult = filterGames(games, { q: "" });
+    const undefinedQueryResult = filterGames(games, { q: undefined });
+
+    expect(ids(emptyQueryResult)).toEqual(ids(undefinedQueryResult));
+    expect(ids(emptyQueryResult)).toEqual(ids(games));
+  });
+
   it("filters by platform", () => {
     const result = filterGames(games, { platform: "pc" });
 
@@ -108,6 +116,12 @@ describe("filterGames", () => {
     expect(ids(result)).toEqual(["neon-racers", "quiet-farm"]);
   });
 
+  it("includes games exactly on the maximum rating boundary", () => {
+    const result = filterGames(games, { maxRating: 7.4 });
+
+    expect(ids(result)).toEqual(["neon-racers", "shadow-dungeon"]);
+  });
+
   it("filters by release year range", () => {
     const result = filterGames(games, { yearFrom: 2019, yearTo: 2021 });
 
@@ -118,6 +132,12 @@ describe("filterGames", () => {
     const result = filterGames(games, { featured: true });
 
     expect(ids(result)).toEqual(["ember-quest", "quiet-farm"]);
+  });
+
+  it("filters to non-featured games only", () => {
+    const result = filterGames(games, { featured: false });
+
+    expect(ids(result)).toEqual(["neon-racers", "shadow-dungeon", "alpha-line"]);
   });
 
   it("sorts by rating descending with title tie-breaks", () => {
@@ -185,7 +205,11 @@ describe("filterGames", () => {
     expect(ids(result)).toEqual(["ember-quest"]);
   });
 
-  it("does not mutate the original array when filtering", () => {
+  it("does not mutate the original array when filtering only", () => {
+    expectOriginalArrayNotMutated(() => filterGames(games, { platform: "pc" }));
+  });
+
+  it("does not mutate the original array when filtering and sorting", () => {
     expectOriginalArrayNotMutated(() =>
       filterGames(games, { platform: "pc", sort: "title_asc" }),
     );
