@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { FilterPanel } from "@/components/FilterPanel";
 import { SavedFilterPresets } from "@/components/SavedFilterPresets";
 import { SearchInput } from "@/components/SearchInput";
 import { VirtualGameList } from "@/components/VirtualGameList";
+import { Button } from "@/components/ui/button";
 import { useGameFilters } from "@/hooks/useGameFilters";
 import { filterGames } from "@/lib/filterGames";
 import { sanitizeGamesResponse } from "@/lib/gameApi";
@@ -28,46 +29,64 @@ export function GameBrowser({
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | undefined>();
+  const abortControllerRef = useRef<AbortController | null>(null);
   const filteredGames = useMemo(
     () => filterGames(games, filters),
     [games, filters],
   );
 
-  useEffect(() => {
+  const loadGames = useCallback(async () => {
+    abortControllerRef.current?.abort();
+
     const controller = new AbortController();
+    abortControllerRef.current = controller;
 
-    async function loadGames() {
-      try {
-        const response = await fetch("/api/games", {
-          signal: controller.signal,
-        });
+    try {
+      await Promise.resolve();
 
-        if (!response.ok) {
-          throw new Error("Unable to load games.");
-        }
+      if (controller.signal.aborted) {
+        return;
+      }
 
-        const data: unknown = await response.json();
-        setGames(sanitizeGamesResponse(data).games);
-        setError(undefined);
-      } catch (loadError) {
-        if (controller.signal.aborted) {
-          return;
-        }
+      setIsLoading(true);
+      setError(undefined);
 
-        setError(
-          loadError instanceof Error ? loadError.message : "Unable to load games.",
-        );
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
+      const response = await fetch("/api/games", {
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to load games.");
+      }
+
+      const data: unknown = await response.json();
+      setGames(sanitizeGamesResponse(data).games);
+    } catch (loadError) {
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      setError(
+        loadError instanceof Error ? loadError.message : "Unable to load games.",
+      );
+    } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+        setIsLoading(false);
       }
     }
-
-    loadGames();
-
-    return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    const initialLoadTimeout = setTimeout(() => {
+      void loadGames();
+    }, 0);
+
+    return () => {
+      clearTimeout(initialLoadTimeout);
+      abortControllerRef.current?.abort();
+    };
+  }, [loadGames]);
 
   return (
     <div
@@ -109,9 +128,14 @@ export function GameBrowser({
             </section>
           ) : error ? (
             <section className="flex min-h-64 items-center justify-center rounded-lg border bg-muted/30 p-8 text-center">
-              <p className="text-sm font-medium text-muted-foreground">
-                {error}
-              </p>
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-muted-foreground">
+                  {error}
+                </p>
+                <Button type="button" variant="outline" onClick={loadGames}>
+                  Try again
+                </Button>
+              </div>
             </section>
           ) : (
             <VirtualGameList games={filteredGames} />
