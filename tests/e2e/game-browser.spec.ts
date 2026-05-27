@@ -1,7 +1,34 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { expect, test, type Page } from "@playwright/test";
 
+interface GameEntry {
+  title: string;
+  platform: string;
+  rating: number;
+  tags: string[];
+}
+
 const focusedSearch = 'platform:PC rating:>9 tag:"Open World"';
-const expectedGame = "Chrome Revenant: Breakpoint";
+
+const games: GameEntry[] = JSON.parse(
+  readFileSync(join(process.cwd(), "data/games.json"), "utf-8"),
+);
+
+const matchedGame = games.find(
+  (g) =>
+    g.platform === "PC" &&
+    g.rating >= 9 &&
+    g.tags.some((t) => t.toLowerCase() === "open world"),
+);
+
+if (!matchedGame) {
+  throw new Error(
+    "E2E fixture error: no game in data/games.json matches the filter criteria. Update the seed data or the filter.",
+  );
+}
+
+const expectedGame = matchedGame.title;
 
 function gameBrowser(page: Page) {
   return page.locator("[data-js-enhanced]").filter({

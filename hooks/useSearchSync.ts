@@ -106,6 +106,10 @@ export function useSearchSync(delay = 300) {
     clearPendingUpdate();
   }, [clearPendingUpdate, urlSearchValue]);
 
+  // Dispatch during render (the React-recommended getDerivedStateFromProps
+  // equivalent for hooks). This avoids an extra render cycle compared to
+  // useEffect — do not move this into an effect, as that would break the
+  // focus-preservation behaviour in urlChanged.
   if (urlSearchValue !== state.lastUrlSearchValue) {
     dispatch({ type: "urlChanged", value: urlSearchValue });
   }
