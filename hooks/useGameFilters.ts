@@ -79,7 +79,7 @@ function applyParam(params: URLSearchParams, key: GameFilterKey, value: FilterVa
   params.set(key, String(value));
 }
 
-function parseFilters(params: URLSearchParams): UrlGameFilters {
+export function parseUrlGameFilters(params: URLSearchParams): UrlGameFilters {
   return {
     q: readString(params, "q"),
     platform: readString(params, "platform"),
@@ -94,6 +94,27 @@ function parseFilters(params: URLSearchParams): UrlGameFilters {
   };
 }
 
+export function applyGameFilterUpdates(
+  currentSearch: string,
+  updates: Partial<Record<GameFilterKey, FilterValue>>,
+): string {
+  const params = new URLSearchParams(currentSearch);
+
+  for (const [key, value] of Object.entries(updates)) {
+    applyParam(params, key as GameFilterKey, value);
+  }
+
+  return params.toString();
+}
+
+export function clearGameFilterParams(currentSearch: string): string {
+  const params = new URLSearchParams(currentSearch);
+
+  FILTER_KEYS.forEach((key) => params.delete(key));
+
+  return params.toString();
+}
+
 export function useGameFilters() {
   const router = useRouter();
   const pathname = usePathname();
@@ -106,19 +127,13 @@ export function useGameFilters() {
   }, [searchParamsString]);
 
   const filters = useMemo(
-    () => parseFilters(new URLSearchParams(searchParamsString)),
+    () => parseUrlGameFilters(new URLSearchParams(searchParamsString)),
     [searchParamsString],
   );
 
   const updateUrl = useCallback(
     (updates: Partial<Record<GameFilterKey, FilterValue>>) => {
-      const params = new URLSearchParams(searchParamsRef.current);
-
-      for (const [key, value] of Object.entries(updates)) {
-        applyParam(params, key as GameFilterKey, value);
-      }
-
-      const query = params.toString();
+      const query = applyGameFilterUpdates(searchParamsRef.current, updates);
       searchParamsRef.current = query;
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     },
@@ -131,11 +146,7 @@ export function useGameFilters() {
   );
 
   const clearAll = useCallback(() => {
-    const params = new URLSearchParams(searchParamsRef.current);
-
-    FILTER_KEYS.forEach((key) => params.delete(key));
-
-    const query = params.toString();
+    const query = clearGameFilterParams(searchParamsRef.current);
     searchParamsRef.current = query;
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }, [pathname, router]);

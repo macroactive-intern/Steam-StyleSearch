@@ -4,45 +4,16 @@ import { ChangeEvent, KeyboardEvent, useCallback, useEffect, useMemo, useRef } f
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useGameFilters, type UrlGameFilters } from "@/hooks/useGameFilters";
+import { useGameFilters } from "@/hooks/useGameFilters";
 import { cn } from "@/lib/utils";
 import { parseQuery } from "@/lib/parseQuery";
+import { filtersToSearchValue } from "@/lib/searchValue";
 
 export interface SearchInputProps {
   id?: string;
   className?: string;
   delay?: number;
   placeholder?: string;
-}
-
-function formatTerm(value: string): string {
-  const term = value.trim().replaceAll('"', "");
-
-  return /\s/.test(term) ? `"${term}"` : term;
-}
-
-function filtersToSearchValue(filters: UrlGameFilters): string {
-  const yearToken =
-    typeof filters.yearFrom === "number" && typeof filters.yearTo === "number"
-      ? filters.yearFrom === filters.yearTo
-        ? `year:${filters.yearFrom}`
-        : `year:${filters.yearFrom}-${filters.yearTo}`
-      : typeof filters.yearFrom === "number"
-        ? `year:>=${filters.yearFrom}`
-        : typeof filters.yearTo === "number"
-          ? `year:<=${filters.yearTo}`
-          : undefined;
-  const tokens = [
-    filters.platform ? `platform:${formatTerm(filters.platform)}` : undefined,
-    filters.genre ? `genre:${formatTerm(filters.genre)}` : undefined,
-    typeof filters.minRating === "number" ? `rating:>${filters.minRating}` : undefined,
-    typeof filters.maxRating === "number" ? `rating:<${filters.maxRating}` : undefined,
-    yearToken,
-    ...filters.tag.map((tag) => `tag:${formatTerm(tag)}`),
-    filters.q ? formatTerm(filters.q) : undefined,
-  ];
-
-  return tokens.filter(Boolean).join(" ");
 }
 
 export function SearchInput({

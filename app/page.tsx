@@ -8,6 +8,7 @@ import {
   getReleaseYearRange,
   getTags,
 } from "@/lib/games";
+import { JS_ENHANCEMENT_SCRIPT } from "@/lib/progressiveEnhancement";
 import type { FilterSort, GameFilters } from "@/types/game";
 
 type PageSearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -112,7 +113,7 @@ export default async function Home({
     <>
       <script
         dangerouslySetInnerHTML={{
-          __html: "document.documentElement.classList.add('js-enabled');",
+          __html: JS_ENHANCEMENT_SCRIPT,
         }}
       />
       <PaginatedGameFallback

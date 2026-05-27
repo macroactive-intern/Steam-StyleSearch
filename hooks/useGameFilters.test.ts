@@ -1,0 +1,54 @@
+import { describe, expect, it } from "vitest";
+import {
+  applyGameFilterUpdates,
+  clearGameFilterParams,
+  parseUrlGameFilters,
+} from "./useGameFilters";
+
+describe("useGameFilters URL helpers", () => {
+  it("parses URL params into filter state", () => {
+    const filters = parseUrlGameFilters(
+      new URLSearchParams(
+        "q=souls&platform=PC&genre=RPG&tag=rpg&tag=open-world&minRating=8&maxRating=10&yearFrom=2018&yearTo=2022&featured=true&sort=rating_desc",
+      ),
+    );
+
+    expect(filters).toEqual({
+      q: "souls",
+      platform: "PC",
+      genre: "RPG",
+      tag: ["rpg", "open-world"],
+      minRating: 8,
+      maxRating: 10,
+      yearFrom: 2018,
+      yearTo: 2022,
+      featured: true,
+      sort: "rating_desc",
+    });
+  });
+
+  it("applies updates while preserving unrelated params", () => {
+    const query = applyGameFilterUpdates("utm=campaign&tag=rpg&page=2", {
+      platform: "Nintendo Switch",
+      tag: ["cozy", "farming"],
+      minRating: 8,
+    });
+
+    expect(new URLSearchParams(query).get("utm")).toBe("campaign");
+    expect(new URLSearchParams(query).get("page")).toBe("2");
+    expect(new URLSearchParams(query).get("platform")).toBe("Nintendo Switch");
+    expect(new URLSearchParams(query).get("minRating")).toBe("8");
+    expect(new URLSearchParams(query).getAll("tag")).toEqual([
+      "cozy",
+      "farming",
+    ]);
+  });
+
+  it("clears only known filter params", () => {
+    const query = clearGameFilterParams(
+      "utm=campaign&q=souls&tag=rpg&platform=PC&page=3",
+    );
+
+    expect(query).toBe("utm=campaign&page=3");
+  });
+});
