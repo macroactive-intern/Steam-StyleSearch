@@ -29,6 +29,17 @@ describe("getGames", () => {
     expect(lowercaseResults.every((game) => game.platform === "PC")).toBe(true);
   });
 
+  it("uses case-insensitive genre matching", () => {
+    const lowercaseResults = getGames({ genre: "rpg" });
+    const canonicalResults = getGames({ genre: "RPG" });
+
+    expect(lowercaseResults.length).toBeGreaterThan(0);
+    expect(lowercaseResults.map((game) => game.id)).toEqual(
+      canonicalResults.map((game) => game.id),
+    );
+    expect(lowercaseResults.every((game) => game.genre === "RPG")).toBe(true);
+  });
+
   it("uses case-insensitive tag matching", () => {
     const lowercaseResults = getGames({ tag: ["rpg"] });
     const uppercaseResults = getGames({ tag: ["RPG"] });
