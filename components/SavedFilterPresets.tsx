@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useSyncExternalStore, useState } from "react";
+import { FormEvent, useMemo, useState, useSyncExternalStore } from "react";
 import { Bookmark, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ import {
   STORAGE_KEY,
 } from "@/lib/filterPresets";
 import { cn } from "@/lib/utils";
-const EMPTY_PRESETS: FilterPreset[] = [];
+const EMPTY_PRESETS_JSON = "";
 
 export interface SavedFilterPresetsProps {
   className?: string;
@@ -27,12 +27,12 @@ function createPresetId() {
   return crypto.randomUUID();
 }
 
-function getStoredPresets(): FilterPreset[] {
+function getStoredPresetsJson(): string {
   if (typeof window === "undefined") {
-    return EMPTY_PRESETS;
+    return EMPTY_PRESETS_JSON;
   }
 
-  return parseStoredPresets(window.localStorage.getItem(STORAGE_KEY));
+  return window.localStorage.getItem(STORAGE_KEY) ?? EMPTY_PRESETS_JSON;
 }
 
 function saveStoredPresets(presets: FilterPreset[]) {
@@ -56,16 +56,17 @@ function subscribeToPresets(onStoreChange: () => void) {
   };
 }
 
-function getServerPresetsSnapshot() {
-  return EMPTY_PRESETS;
+function getServerPresetsJsonSnapshot() {
+  return EMPTY_PRESETS_JSON;
 }
 
 export function SavedFilterPresets({ className }: SavedFilterPresetsProps) {
-  const presets = useSyncExternalStore(
+  const presetsJson = useSyncExternalStore(
     subscribeToPresets,
-    getStoredPresets,
-    getServerPresetsSnapshot,
+    getStoredPresetsJson,
+    getServerPresetsJsonSnapshot,
   );
+  const presets = useMemo(() => parseStoredPresets(presetsJson), [presetsJson]);
   const { filters, setters } = useGameFilters();
   const [presetName, setPresetName] = useState("");
   const [storageError, setStorageError] = useState<string | undefined>();
