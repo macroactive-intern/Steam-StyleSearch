@@ -42,6 +42,7 @@ export interface UrlGameFilters {
 }
 
 type FilterValue = string | number | boolean | readonly string[] | null | undefined;
+type SearchParamsReader = Pick<URLSearchParams, "get" | "getAll">;
 
 export const EMPTY_GAME_FILTER_UPDATES: Partial<
   Record<GameFilterKey, FilterValue>
@@ -58,7 +59,7 @@ export const EMPTY_GAME_FILTER_UPDATES: Partial<
   featured: undefined,
 };
 
-function readNumber(params: URLSearchParams, key: GameFilterKey): number | undefined {
+function readNumber(params: SearchParamsReader, key: GameFilterKey): number | undefined {
   const value = params.get(key);
 
   if (!value) {
@@ -70,7 +71,7 @@ function readNumber(params: URLSearchParams, key: GameFilterKey): number | undef
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
-function readBoolean(params: URLSearchParams, key: GameFilterKey): boolean | undefined {
+function readBoolean(params: SearchParamsReader, key: GameFilterKey): boolean | undefined {
   const value = params.get(key);
 
   if (value === "true") {
@@ -84,11 +85,11 @@ function readBoolean(params: URLSearchParams, key: GameFilterKey): boolean | und
   return undefined;
 }
 
-function readString(params: URLSearchParams, key: GameFilterKey): string | undefined {
+function readString(params: SearchParamsReader, key: GameFilterKey): string | undefined {
   return params.get(key)?.trim() || undefined;
 }
 
-function readSort(params: URLSearchParams): FilterSort | undefined {
+function readSort(params: SearchParamsReader): FilterSort | undefined {
   const value = readString(params, "sort");
 
   return VALID_SORTS.some((sort) => sort === value)
@@ -133,7 +134,7 @@ function applyParam(params: URLSearchParams, key: GameFilterKey, value: FilterVa
   params.set(key, String(value));
 }
 
-export function parseUrlGameFilters(params: URLSearchParams): UrlGameFilters {
+export function parseUrlGameFilters(params: SearchParamsReader): UrlGameFilters {
   const ratingRange = orderRange(
     readNumber(params, "minRating"),
     readNumber(params, "maxRating"),
@@ -196,8 +197,8 @@ export function useGameFilters() {
   }, [searchParamsString]);
 
   const filters = useMemo(
-    () => parseUrlGameFilters(new URLSearchParams(searchParamsString)),
-    [searchParamsString],
+    () => parseUrlGameFilters(searchParams),
+    [searchParams],
   );
 
   const updateUrl = useCallback(
