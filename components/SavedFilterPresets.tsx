@@ -7,11 +7,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useGameFilters, type UrlGameFilters } from "@/hooks/useGameFilters";
 import { cn } from "@/lib/utils";
+import type { FilterSort } from "@/types/game";
 
 const STORAGE_KEY = "steam-style-search:filter-presets";
 const STORAGE_EVENT = "game-filter-presets-change";
 const MAX_PRESET_NAME_LENGTH = 50;
+const MAX_PRESET_COUNT = 20;
+const MAX_FILTER_TEXT_LENGTH = 120;
+const MAX_TAG_COUNT = 20;
 const EMPTY_PRESETS: FilterPreset[] = [];
+const SORT_VALUES = new Set<FilterSort>([
+  "rating_desc",
+  "rating_asc",
+  "title_asc",
+  "year_desc",
+]);
 
 export interface FilterPreset {
   id: string;
@@ -43,6 +53,95 @@ function cloneFilters(filters: UrlGameFilters): UrlGameFilters {
   };
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function readString(value: unknown, maxLength = MAX_FILTER_TEXT_LENGTH) {
+  return typeof value === "string"
+    ? value.trim().slice(0, maxLength) || undefined
+    : undefined;
+}
+
+function readNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function readBoolean(value: unknown) {
+  return typeof value === "boolean" ? value : undefined;
+}
+
+function readTags(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((tag) => readString(tag))
+    .filter((tag): tag is string => Boolean(tag))
+    .slice(0, MAX_TAG_COUNT);
+}
+
+function readSort(value: unknown) {
+  const sort = readString(value);
+
+  return sort && SORT_VALUES.has(sort as FilterSort)
+    ? (sort as FilterSort)
+    : undefined;
+}
+
+function sanitizeFilters(value: unknown): UrlGameFilters | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  return {
+    q: readString(value.q),
+    platform: readString(value.platform),
+    genre: readString(value.genre),
+    tag: readTags(value.tag),
+    minRating: readNumber(value.minRating),
+    maxRating: readNumber(value.maxRating),
+    yearFrom: readNumber(value.yearFrom),
+    yearTo: readNumber(value.yearTo),
+    sort: readSort(value.sort),
+    featured: readBoolean(value.featured),
+  };
+}
+
+function sanitizePreset(value: unknown): FilterPreset | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const id = readString(value.id, 100);
+  const name = readString(value.name, MAX_PRESET_NAME_LENGTH);
+  const createdAt = readString(value.createdAt, 40);
+  const filters = sanitizeFilters(value.filters);
+
+  if (!id || !name || !createdAt || !filters) {
+    return undefined;
+  }
+
+  return {
+    id,
+    name,
+    createdAt,
+    filters,
+  };
+}
+
+function sanitizePresets(value: unknown): FilterPreset[] {
+  if (!Array.isArray(value)) {
+    return EMPTY_PRESETS;
+  }
+
+  return value
+    .map(sanitizePreset)
+    .filter((preset): preset is FilterPreset => Boolean(preset))
+    .slice(0, MAX_PRESET_COUNT);
+}
+
 function getStoredPresets(): FilterPreset[] {
   if (typeof window === "undefined") {
     return EMPTY_PRESETS;
@@ -51,15 +150,17 @@ function getStoredPresets(): FilterPreset[] {
   const presetsJson = window.localStorage.getItem(STORAGE_KEY) ?? "[]";
 
   try {
-    const parsedPresets = JSON.parse(presetsJson) as FilterPreset[];
-    return Array.isArray(parsedPresets) ? parsedPresets : EMPTY_PRESETS;
+    return sanitizePresets(JSON.parse(presetsJson));
   } catch {
     return EMPTY_PRESETS;
   }
 }
 
 function saveStoredPresets(presets: FilterPreset[]) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(presets));
+  window.localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(sanitizePresets(presets)),
+  );
   window.dispatchEvent(new Event(STORAGE_EVENT));
 }
 
@@ -89,7 +190,7 @@ export function SavedFilterPresets({ className }: SavedFilterPresetsProps) {
   function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const name = presetName.trim();
+    const name = presetName.trim().slice(0, MAX_PRESET_NAME_LENGTH);
 
     if (!name) {
       return;
