@@ -152,3 +152,15 @@ export function parseStoredPresets(presetsJson: string | null): FilterPreset[] {
 export function serializePresets(presets: FilterPreset[]) {
   return JSON.stringify(sanitizePresets(presets));
 }
+
+export function savePresetsToStorage(
+  storage: Pick<Storage, "setItem">,
+  presets: FilterPreset[],
+): boolean {
+  try {
+    storage.setItem(STORAGE_KEY, serializePresets(presets));
+    return true;
+  } catch {
+    return false;
+  }
+}

@@ -3,6 +3,7 @@ import {
   cloneFilters,
   hasPresetName,
   parseStoredPresets,
+  savePresetsToStorage,
   sanitizePresets,
   serializePresets,
   type FilterPreset,
@@ -82,5 +83,27 @@ describe("filter preset storage helpers", () => {
     expect(hasPresetName([preset], " rpg PRESET ")).toBe(true);
     expect(hasPresetName([preset], "Strategy preset")).toBe(false);
     expect(hasPresetName([preset], "   ")).toBe(false);
+  });
+
+  it("reports localStorage write failures without throwing", () => {
+    const storage = {
+      setItem: () => {
+        throw new DOMException("Storage is full", "QuotaExceededError");
+      },
+    };
+
+    expect(savePresetsToStorage(storage, [preset])).toBe(false);
+  });
+
+  it("reports successful localStorage writes", () => {
+    let storedValue = "";
+    const storage = {
+      setItem: (_key: string, value: string) => {
+        storedValue = value;
+      },
+    };
+
+    expect(savePresetsToStorage(storage, [preset])).toBe(true);
+    expect(parseStoredPresets(storedValue)).toEqual([preset]);
   });
 });

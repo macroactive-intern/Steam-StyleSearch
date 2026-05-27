@@ -12,7 +12,7 @@ import {
   type FilterPreset,
   MAX_PRESET_NAME_LENGTH,
   parseStoredPresets,
-  serializePresets,
+  savePresetsToStorage,
   STORAGE_EVENT,
   STORAGE_KEY,
 } from "@/lib/filterPresets";
@@ -36,8 +36,14 @@ function getStoredPresets(): FilterPreset[] {
 }
 
 function saveStoredPresets(presets: FilterPreset[]) {
-  window.localStorage.setItem(STORAGE_KEY, serializePresets(presets));
+  const didSave = savePresetsToStorage(window.localStorage, presets);
+
+  if (!didSave) {
+    return false;
+  }
+
   window.dispatchEvent(new Event(STORAGE_EVENT));
+  return true;
 }
 
 function subscribeToPresets(onStoreChange: () => void) {
@@ -62,6 +68,7 @@ export function SavedFilterPresets({ className }: SavedFilterPresetsProps) {
   );
   const { filters, setters } = useGameFilters();
   const [presetName, setPresetName] = useState("");
+  const [storageError, setStorageError] = useState<string | undefined>();
   const trimmedPresetName = presetName.trim().slice(0, MAX_PRESET_NAME_LENGTH);
   const hasDuplicateName = hasPresetName(presets, trimmedPresetName);
 
@@ -74,7 +81,9 @@ export function SavedFilterPresets({ className }: SavedFilterPresetsProps) {
       return;
     }
 
-    saveStoredPresets([
+    setStorageError(undefined);
+
+    const didSave = saveStoredPresets([
       {
         id: createPresetId(),
         name,
@@ -83,6 +92,12 @@ export function SavedFilterPresets({ className }: SavedFilterPresetsProps) {
       },
       ...presets,
     ]);
+
+    if (!didSave) {
+      setStorageError("Unable to save preset. Browser storage may be full.");
+      return;
+    }
+
     setPresetName("");
   }
 
@@ -91,7 +106,11 @@ export function SavedFilterPresets({ className }: SavedFilterPresetsProps) {
   }
 
   function deletePreset(presetId: string) {
-    saveStoredPresets(presets.filter((preset) => preset.id !== presetId));
+    setStorageError(undefined);
+
+    if (!saveStoredPresets(presets.filter((preset) => preset.id !== presetId))) {
+      setStorageError("Unable to delete preset. Browser storage may be full.");
+    }
   }
 
   return (
@@ -126,6 +145,11 @@ export function SavedFilterPresets({ className }: SavedFilterPresetsProps) {
         {hasDuplicateName ? (
           <p id="preset-name-error" className="text-sm text-destructive">
             A preset with this name already exists.
+          </p>
+        ) : null}
+        {storageError ? (
+          <p role="alert" className="text-sm text-destructive">
+            {storageError}
           </p>
         ) : null}
       </form>
