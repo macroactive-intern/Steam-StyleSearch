@@ -37,6 +37,21 @@ export function cloneFilters(filters: UrlGameFilters): UrlGameFilters {
   };
 }
 
+export function hasPresetName(
+  presets: readonly FilterPreset[],
+  name: string,
+): boolean {
+  const normalizedName = name.trim().toLowerCase();
+
+  if (!normalizedName) {
+    return false;
+  }
+
+  return presets.some(
+    (preset) => preset.name.trim().toLowerCase() === normalizedName,
+  );
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }

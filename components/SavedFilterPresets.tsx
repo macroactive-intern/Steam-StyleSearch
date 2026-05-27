@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useGameFilters } from "@/hooks/useGameFilters";
 import {
   cloneFilters,
+  hasPresetName,
   type FilterPreset,
   MAX_PRESET_NAME_LENGTH,
   parseStoredPresets,
@@ -61,13 +62,15 @@ export function SavedFilterPresets({ className }: SavedFilterPresetsProps) {
   );
   const { filters, setters } = useGameFilters();
   const [presetName, setPresetName] = useState("");
+  const trimmedPresetName = presetName.trim().slice(0, MAX_PRESET_NAME_LENGTH);
+  const hasDuplicateName = hasPresetName(presets, trimmedPresetName);
 
   function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const name = presetName.trim().slice(0, MAX_PRESET_NAME_LENGTH);
+    const name = trimmedPresetName;
 
-    if (!name) {
+    if (!name || hasPresetName(presets, name)) {
       return;
     }
 
@@ -113,11 +116,18 @@ export function SavedFilterPresets({ className }: SavedFilterPresetsProps) {
             placeholder="My RPG search"
             autoComplete="off"
             maxLength={MAX_PRESET_NAME_LENGTH}
+            aria-invalid={hasDuplicateName}
+            aria-describedby={hasDuplicateName ? "preset-name-error" : undefined}
           />
-          <Button type="submit" disabled={!presetName.trim()}>
+          <Button type="submit" disabled={!trimmedPresetName || hasDuplicateName}>
             Save
           </Button>
         </div>
+        {hasDuplicateName ? (
+          <p id="preset-name-error" className="text-sm text-destructive">
+            A preset with this name already exists.
+          </p>
+        ) : null}
       </form>
 
       {presets.length > 0 ? (

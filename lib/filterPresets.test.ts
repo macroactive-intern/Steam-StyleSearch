@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   cloneFilters,
+  hasPresetName,
   parseStoredPresets,
   sanitizePresets,
   serializePresets,
@@ -75,5 +76,11 @@ describe("filter preset storage helpers", () => {
 
     expect(cloned).toEqual(preset.filters);
     expect(cloned.tag).not.toBe(preset.filters.tag);
+  });
+
+  it("matches duplicate preset names case-insensitively", () => {
+    expect(hasPresetName([preset], " rpg PRESET ")).toBe(true);
+    expect(hasPresetName([preset], "Strategy preset")).toBe(false);
+    expect(hasPresetName([preset], "   ")).toBe(false);
   });
 });
