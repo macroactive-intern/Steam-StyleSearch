@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyGameFilterUpdates,
   clearGameFilterParams,
+  EMPTY_GAME_FILTER_UPDATES,
   parseUrlGameFilters,
 } from "./useGameFilters";
 
@@ -50,5 +51,14 @@ describe("useGameFilters URL helpers", () => {
     );
 
     expect(query).toBe("utm=campaign&page=3");
+  });
+
+  it("empty filter updates clear every filter represented by SearchInput", () => {
+    const query = applyGameFilterUpdates(
+      "utm=campaign&q=souls&platform=PC&genre=RPG&tag=rpg&minRating=8&maxRating=10&yearFrom=2018&yearTo=2022&sort=rating_desc&featured=true",
+      EMPTY_GAME_FILTER_UPDATES,
+    );
+
+    expect(query).toBe("utm=campaign");
   });
 });

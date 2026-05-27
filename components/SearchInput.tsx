@@ -4,7 +4,7 @@ import { ChangeEvent, KeyboardEvent, useCallback, useEffect, useMemo, useRef } f
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useGameFilters } from "@/hooks/useGameFilters";
+import { EMPTY_GAME_FILTER_UPDATES, useGameFilters } from "@/hooks/useGameFilters";
 import { cn } from "@/lib/utils";
 import { parseQuery } from "@/lib/parseQuery";
 import { filtersToSearchValue } from "@/lib/searchValue";
@@ -100,16 +100,7 @@ export function SearchInput({
       inputRef.current.value = "";
     }
 
-    setters.setFilters({
-      q: undefined,
-      platform: undefined,
-      genre: undefined,
-      tag: [],
-      minRating: undefined,
-      maxRating: undefined,
-      yearFrom: undefined,
-      yearTo: undefined,
-    });
+    setters.setFilters(EMPTY_GAME_FILTER_UPDATES);
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {

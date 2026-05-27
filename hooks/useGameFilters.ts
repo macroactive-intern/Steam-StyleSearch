@@ -34,6 +34,21 @@ export interface UrlGameFilters {
 
 type FilterValue = string | number | boolean | readonly string[] | null | undefined;
 
+export const EMPTY_GAME_FILTER_UPDATES: Partial<
+  Record<GameFilterKey, FilterValue>
+> = {
+  q: undefined,
+  platform: undefined,
+  genre: undefined,
+  tag: [],
+  minRating: undefined,
+  maxRating: undefined,
+  yearFrom: undefined,
+  yearTo: undefined,
+  sort: undefined,
+  featured: undefined,
+};
+
 function readNumber(params: URLSearchParams, key: GameFilterKey): number | undefined {
   const value = params.get(key);
 
