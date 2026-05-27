@@ -2,11 +2,11 @@ import { Suspense } from "react";
 import { GameBrowser } from "@/components/GameBrowser";
 import { PaginatedGameFallback } from "@/components/PaginatedGameFallback";
 import {
+  GENRES,
   getGames,
-  getGenres,
-  getPlatforms,
-  getReleaseYearRange,
-  getTags,
+  PLATFORMS,
+  RELEASE_YEAR_RANGE,
+  TAGS,
 } from "@/lib/games";
 import { JS_ENHANCEMENT_SCRIPT } from "@/lib/progressiveEnhancement";
 import type { FilterSort, GameFilters } from "@/types/game";
@@ -103,10 +103,10 @@ export default async function Home({
   const page = getPageNumber(resolvedSearchParams);
   const fallbackGames = getGames(getFallbackFilters(resolvedSearchParams));
   const filterOptions = {
-    platforms: getPlatforms(),
-    genres: getGenres(),
-    tags: getTags(),
-    releaseYearRange: getReleaseYearRange(),
+    platforms: PLATFORMS,
+    genres: GENRES,
+    tags: TAGS,
+    releaseYearRange: RELEASE_YEAR_RANGE,
   };
 
   return (

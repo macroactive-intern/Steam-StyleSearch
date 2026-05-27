@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getGames } from "./games";
+import { GENRES, getGames, PLATFORMS, RELEASE_YEAR_RANGE, TAGS } from "./games";
 
 describe("getGames", () => {
   it("uses the same title and description text search scope as the JS path", () => {
@@ -57,5 +57,14 @@ describe("getGames", () => {
           game.releaseYear <= 2022,
       ),
     ).toBe(true);
+  });
+});
+
+describe("game filter option constants", () => {
+  it("exports precomputed platform, genre, tag, and release year options", () => {
+    expect(PLATFORMS.length).toBeGreaterThan(0);
+    expect(GENRES.length).toBeGreaterThan(0);
+    expect(TAGS.length).toBeGreaterThan(0);
+    expect(RELEASE_YEAR_RANGE).toEqual({ min: 1995, max: 2026 });
   });
 });

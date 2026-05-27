@@ -21,6 +21,16 @@ function uniqueSorted(values: Iterable<string>): string[] {
   );
 }
 
+const releaseYears = games.map((game) => game.releaseYear);
+
+export const PLATFORMS = uniqueSorted(games.map((game) => game.platform));
+export const GENRES = uniqueSorted(games.map((game) => game.genre));
+export const TAGS = uniqueSorted(games.flatMap((game) => game.tags));
+export const RELEASE_YEAR_RANGE = {
+  min: Math.min(...releaseYears),
+  max: Math.max(...releaseYears),
+};
+
 function toFilterGamesFilters({
   search,
   ...filters
@@ -39,25 +49,4 @@ export function getGameById(id: string): Game | undefined {
   const game = games.find((game) => game.id === id);
 
   return game ? copyGame(game) : undefined;
-}
-
-export function getPlatforms(): string[] {
-  return uniqueSorted(games.map((game) => game.platform));
-}
-
-export function getGenres(): string[] {
-  return uniqueSorted(games.map((game) => game.genre));
-}
-
-export function getTags(): string[] {
-  return uniqueSorted(games.flatMap((game) => game.tags));
-}
-
-export function getReleaseYearRange(): { min: number; max: number } {
-  const releaseYears = games.map((game) => game.releaseYear);
-
-  return {
-    min: Math.min(...releaseYears),
-    max: Math.max(...releaseYears),
-  };
 }
