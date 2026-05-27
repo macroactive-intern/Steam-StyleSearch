@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { FilterSort } from "@/types/game";
 
@@ -98,24 +98,31 @@ export function useGameFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchParamsString = searchParams.toString();
+  const searchParamsRef = useRef(searchParamsString);
+
+  useEffect(() => {
+    searchParamsRef.current = searchParamsString;
+  }, [searchParamsString]);
 
   const filters = useMemo(
-    () => parseFilters(new URLSearchParams(searchParams.toString())),
-    [searchParams],
+    () => parseFilters(new URLSearchParams(searchParamsString)),
+    [searchParamsString],
   );
 
   const updateUrl = useCallback(
     (updates: Partial<Record<GameFilterKey, FilterValue>>) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParamsRef.current);
 
       for (const [key, value] of Object.entries(updates)) {
         applyParam(params, key as GameFilterKey, value);
       }
 
       const query = params.toString();
+      searchParamsRef.current = query;
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     },
-    [pathname, router, searchParams],
+    [pathname, router],
   );
 
   const clearFilter = useCallback(
@@ -124,13 +131,14 @@ export function useGameFilters() {
   );
 
   const clearAll = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParamsRef.current);
 
     FILTER_KEYS.forEach((key) => params.delete(key));
 
     const query = params.toString();
+    searchParamsRef.current = query;
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  }, [pathname, router, searchParams]);
+  }, [pathname, router]);
 
   const setters = useMemo(
     () => ({
