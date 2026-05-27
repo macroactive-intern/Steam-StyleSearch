@@ -1,14 +1,7 @@
-import type { FilterSort, GameFilters } from "@/types/game";
+import { isFilterSort, type FilterSort, type GameFilters } from "@/types/game";
 
 export type PageSearchParamsValue = string | string[] | undefined;
 export type ResolvedPageSearchParams = Record<string, PageSearchParamsValue>;
-
-const SORT_VALUES = new Set<FilterSort>([
-  "rating_desc",
-  "rating_asc",
-  "title_asc",
-  "year_desc",
-]);
 
 function readFirst(searchParams: ResolvedPageSearchParams, key: string) {
   const value = searchParams[key];
@@ -55,7 +48,7 @@ function readBoolean(searchParams: ResolvedPageSearchParams, key: string) {
 function readSort(searchParams: ResolvedPageSearchParams): FilterSort | undefined {
   const sort = readFirst(searchParams, "sort");
 
-  return SORT_VALUES.has(sort as FilterSort) ? (sort as FilterSort) : undefined;
+  return isFilterSort(sort) ? sort : undefined;
 }
 
 export function getPageNumber(searchParams: ResolvedPageSearchParams) {

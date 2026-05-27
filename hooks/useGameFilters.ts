@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { orderRange } from "@/lib/range";
-import type { FilterSort } from "@/types/game";
+import { isFilterSort, type FilterSort } from "@/types/game";
 
 const FILTER_KEYS = [
   "q",
@@ -17,13 +17,6 @@ const FILTER_KEYS = [
   "sort",
   "featured",
 ] as const;
-
-const VALID_SORTS = [
-  "rating_desc",
-  "rating_asc",
-  "title_asc",
-  "year_desc",
-] as const satisfies readonly FilterSort[];
 
 const PAGE_PARAM = "page";
 
@@ -93,9 +86,7 @@ function readString(params: SearchParamsReader, key: GameFilterKey): string | un
 function readSort(params: SearchParamsReader): FilterSort | undefined {
   const value = readString(params, "sort");
 
-  return VALID_SORTS.some((sort) => sort === value)
-    ? (value as FilterSort)
-    : undefined;
+  return isFilterSort(value) ? value : undefined;
 }
 
 function normalizeRangeParams(

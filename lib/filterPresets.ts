@@ -1,5 +1,5 @@
 import type { UrlGameFilters } from "@/hooks/useGameFilters";
-import type { FilterSort } from "@/types/game";
+import { isFilterSort } from "@/types/game";
 
 export const STORAGE_KEY = "steam-style-search:filter-presets";
 export const STORAGE_EVENT = "game-filter-presets-change";
@@ -8,12 +8,6 @@ const MAX_PRESET_COUNT = 20;
 const MAX_FILTER_TEXT_LENGTH = 120;
 const MAX_TAG_COUNT = 20;
 const EMPTY_PRESETS: FilterPreset[] = [];
-const SORT_VALUES = new Set<FilterSort>([
-  "rating_desc",
-  "rating_asc",
-  "title_asc",
-  "year_desc",
-]);
 
 export interface FilterPreset {
   id: string;
@@ -84,9 +78,7 @@ function readTags(value: unknown) {
 function readSort(value: unknown) {
   const sort = readString(value);
 
-  return sort && SORT_VALUES.has(sort as FilterSort)
-    ? (sort as FilterSort)
-    : undefined;
+  return isFilterSort(sort) ? sort : undefined;
 }
 
 function sanitizeFilters(value: unknown): UrlGameFilters | undefined {

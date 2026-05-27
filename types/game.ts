@@ -11,11 +11,18 @@ export interface Game {
   coverImage: string;
 }
 
-export type FilterSort =
-  | "rating_desc"
-  | "rating_asc"
-  | "title_asc"
-  | "year_desc";
+export const FILTER_SORT_VALUES = [
+  "rating_desc",
+  "rating_asc",
+  "title_asc",
+  "year_desc",
+] as const;
+
+export type FilterSort = (typeof FILTER_SORT_VALUES)[number];
+
+export function isFilterSort(value: string | undefined): value is FilterSort {
+  return FILTER_SORT_VALUES.some((sort) => sort === value);
+}
 
 export interface GameFilters {
   q?: string;
