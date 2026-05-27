@@ -1,6 +1,14 @@
 "use client";
 
-import { ChangeEvent, KeyboardEvent, useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  ChangeEvent,
+  KeyboardEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from "react";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,8 +32,9 @@ export function SearchInput({
 }: SearchInputProps) {
   const { filters, setters } = useGameFilters();
   const urlSearchValue = useMemo(() => filtersToSearchValue(filters), [filters]);
-  const inputRef = useRef<HTMLInputElement>(null);
   const pendingUpdateRef = useRef<number | undefined>(undefined);
+  const [lastUrlSearchValue, setLastUrlSearchValue] = useState(urlSearchValue);
+  const [value, setValue] = useState(urlSearchValue);
   const controlledFiltersKey = useMemo(
     () =>
       JSON.stringify({
@@ -48,12 +57,13 @@ export function SearchInput({
     }
   }, []);
 
+  if (urlSearchValue !== lastUrlSearchValue) {
+    setLastUrlSearchValue(urlSearchValue);
+    setValue(urlSearchValue);
+  }
+
   useEffect(() => {
     clearPendingUpdate();
-
-    if (inputRef.current) {
-      inputRef.current.value = urlSearchValue;
-    }
 
     return clearPendingUpdate;
   }, [clearPendingUpdate, urlSearchValue]);
@@ -88,18 +98,17 @@ export function SearchInput({
 
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      scheduleUrlUpdate(event.target.value);
+      const nextValue = event.target.value;
+
+      setValue(nextValue);
+      scheduleUrlUpdate(nextValue);
     },
     [scheduleUrlUpdate],
   );
 
   function handleClear() {
     clearPendingUpdate();
-
-    if (inputRef.current) {
-      inputRef.current.value = "";
-    }
-
+    setValue("");
     setters.setFilters(EMPTY_GAME_FILTER_UPDATES);
   }
 
@@ -121,9 +130,8 @@ export function SearchInput({
       />
       <Input
         id={id}
-        ref={inputRef}
         type="search"
-        defaultValue={urlSearchValue}
+        value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
@@ -131,7 +139,7 @@ export function SearchInput({
         autoComplete="off"
         spellCheck={false}
       />
-      {urlSearchValue ? (
+      {value ? (
         <Button
           type="button"
           variant="ghost"
