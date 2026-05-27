@@ -35,7 +35,7 @@ export interface SavedFilterPresetsProps {
 }
 
 function createPresetId() {
-  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+  return crypto.randomUUID();
 }
 
 function cloneFilters(filters: UrlGameFilters): UrlGameFilters {
