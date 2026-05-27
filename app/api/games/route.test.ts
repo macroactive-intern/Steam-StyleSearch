@@ -11,4 +11,8 @@ describe("/api/games", () => {
     expect(body.games?.length).toBeGreaterThan(1000);
     expect(response.headers.get("Cache-Control")).toContain("max-age=300");
   });
+
+  it("reuses the precomputed response between requests", () => {
+    expect(GET()).toBe(GET());
+  });
 });
