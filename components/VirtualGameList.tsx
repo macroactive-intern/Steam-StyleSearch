@@ -53,8 +53,8 @@ function GameCard({ game }: { game: Game }) {
 export function VirtualGameList({ games, className }: VirtualGameListProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const count = games.length;
-  // TanStack Virtual intentionally returns live instance methods for measurement.
-  // eslint-disable-next-line react-hooks/incompatible-library
+  // React Compiler flags TanStack Virtual because it exposes live measurement methods.
+  // eslint-disable-next-line react-hooks/incompatible-library -- useVirtualizer is required for windowed rendering.
   const rowVirtualizer = useVirtualizer({
     count,
     getScrollElement: () => parentRef.current,
