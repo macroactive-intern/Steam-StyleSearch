@@ -1,21 +1,10 @@
 "use client";
 
-import {
-  ChangeEvent,
-  KeyboardEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EMPTY_GAME_FILTER_UPDATES, useGameFilters } from "@/hooks/useGameFilters";
+import { useSearchSync } from "@/hooks/useSearchSync";
 import { cn } from "@/lib/utils";
-import { parseQuery } from "@/lib/parseQuery";
-import { filtersToSearchValue } from "@/lib/searchValue";
 
 export interface SearchInputProps {
   id?: string;
@@ -30,98 +19,14 @@ export function SearchInput({
   delay = 300,
   placeholder = 'Search games or use platform:PC genre:rpg year:2018-2022 rating:>8 tag:rpg "dark souls"',
 }: SearchInputProps) {
-  const { filters, setters } = useGameFilters();
-  const urlSearchValue = useMemo(() => filtersToSearchValue(filters), [filters]);
-  const pendingUpdateRef = useRef<number | undefined>(undefined);
-  const [lastUrlSearchValue, setLastUrlSearchValue] = useState(urlSearchValue);
-  const [value, setValue] = useState(urlSearchValue);
-  const [isFocused, setIsFocused] = useState(false);
-  const controlledFiltersKey = useMemo(
-    () =>
-      JSON.stringify({
-        q: filters.q,
-        platform: filters.platform,
-        genre: filters.genre,
-        tag: filters.tag,
-        minRating: filters.minRating,
-        maxRating: filters.maxRating,
-        yearFrom: filters.yearFrom,
-        yearTo: filters.yearTo,
-      }),
-    [filters],
-  );
-
-  const clearPendingUpdate = useCallback(() => {
-    if (pendingUpdateRef.current !== undefined) {
-      window.clearTimeout(pendingUpdateRef.current);
-      pendingUpdateRef.current = undefined;
-    }
-  }, []);
-
-  if (urlSearchValue !== lastUrlSearchValue) {
-    setLastUrlSearchValue(urlSearchValue);
-
-    if (!isFocused) {
-      setValue(urlSearchValue);
-    }
-  }
-
-  useEffect(() => clearPendingUpdate, [clearPendingUpdate]);
-
-  useEffect(() => {
-    clearPendingUpdate();
-  }, [clearPendingUpdate, urlSearchValue]);
-
-  const scheduleUrlUpdate = useCallback(
-    (nextValue: string) => {
-      clearPendingUpdate();
-      pendingUpdateRef.current = window.setTimeout(() => {
-        const parsed = parseQuery(nextValue);
-        const updates = {
-          q: parsed.terms.join(" ") || undefined,
-          platform: parsed.filters.platform,
-          genre: parsed.filters.genre,
-          tag: parsed.filters.tags,
-          minRating: parsed.filters.minRating,
-          maxRating: parsed.filters.maxRating,
-          yearFrom: parsed.filters.yearFrom,
-          yearTo: parsed.filters.yearTo,
-        };
-
-        pendingUpdateRef.current = undefined;
-
-        if (JSON.stringify(updates) === controlledFiltersKey) {
-          return;
-        }
-
-        setters.setFilters(updates);
-      }, delay);
-    },
-    [clearPendingUpdate, controlledFiltersKey, delay, setters],
-  );
-
-  const handleChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const nextValue = event.target.value;
-
-      setValue(nextValue);
-      scheduleUrlUpdate(nextValue);
-    },
-    [scheduleUrlUpdate],
-  );
-
-  function handleClear() {
-    clearPendingUpdate();
-    setValue("");
-    setters.setFilters(EMPTY_GAME_FILTER_UPDATES);
-  }
-
-  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "Escape" && event.currentTarget.value) {
-      event.preventDefault();
-      handleClear();
-    }
-  }
+  const {
+    value,
+    handleBlur,
+    handleChange,
+    handleClear,
+    handleFocus,
+    handleKeyDown,
+  } = useSearchSync(delay);
 
   return (
     <div className={cn("relative w-full", className)}>
@@ -138,8 +43,8 @@ export function SearchInput({
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         placeholder={placeholder}
         className="pr-10 pl-9"
         autoComplete="off"

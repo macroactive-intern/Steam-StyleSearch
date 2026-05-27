@@ -63,4 +63,22 @@ describe("SearchInput", () => {
       yearTo: undefined,
     });
   });
+
+  it("cancels a pending debounce when URL filters change externally", () => {
+    const { rerender } = render(<SearchInput delay={300} />);
+    const input = screen.getByRole("searchbox", { name: "Search games" });
+
+    fireEvent.focus(input);
+    fireEvent.change(input, {
+      target: { value: "dark sol" },
+    });
+
+    gameFiltersMock.filters = { tag: ["RPG"] } as UrlGameFilters;
+    rerender(<SearchInput delay={300} />);
+
+    expect(input).toHaveProperty("value", "dark sol");
+
+    act(() => vi.advanceTimersByTime(300));
+    expect(gameFiltersMock.setters.setFilters).not.toHaveBeenCalled();
+  });
 });
