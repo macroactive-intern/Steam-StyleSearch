@@ -150,5 +150,7 @@ export function filterGames(
     gameMatchesFilters(game, normalizedFilters),
   );
 
-  return sortGames(filteredGames, normalizedFilters.sort);
+  return normalizedFilters.sort
+    ? filteredGames.sort(sorters[normalizedFilters.sort])
+    : filteredGames;
 }
