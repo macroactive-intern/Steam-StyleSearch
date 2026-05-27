@@ -112,8 +112,7 @@ export default async function Home({
     <>
       <script
         dangerouslySetInnerHTML={{
-          __html:
-            "document.documentElement.classList.add('js-enabled');document.documentElement.classList.remove('no-js');",
+          __html: "document.documentElement.classList.add('js-enabled');",
         }}
       />
       <PaginatedGameFallback
