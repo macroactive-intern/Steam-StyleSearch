@@ -43,4 +43,49 @@ describe("filtersToSearchValue", () => {
     });
     expect(parsed.terms).toEqual([]);
   });
+
+  it("serializes exact, bounded, and one-sided year filters", () => {
+    expect(
+      filtersToSearchValue({
+        tag: [],
+        yearFrom: 2020,
+        yearTo: 2020,
+      }),
+    ).toBe("year:2020");
+    expect(
+      filtersToSearchValue({
+        tag: [],
+        yearFrom: 2018,
+        yearTo: 2022,
+      }),
+    ).toBe("year:2018-2022");
+    expect(
+      filtersToSearchValue({
+        tag: [],
+        yearFrom: 2018,
+      }),
+    ).toBe("year:>=2018");
+    expect(
+      filtersToSearchValue({
+        tag: [],
+        yearTo: 2022,
+      }),
+    ).toBe("year:<=2022");
+  });
+
+  it("round-trips year ranges through the advanced query parser", () => {
+    const parsed = parseQuery(
+      filtersToSearchValue({
+        tag: [],
+        yearFrom: 2018,
+        yearTo: 2022,
+      }),
+    );
+
+    expect(parsed.filters).toEqual({
+      tags: [],
+      yearFrom: 2018,
+      yearTo: 2022,
+    });
+  });
 });
