@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { UrlGameFilters } from "@/hooks/useGameFilters";
 
-const filters: UrlGameFilters = {
+let filters: UrlGameFilters = {
   tag: ["RPG"],
   featured: true,
 };
@@ -47,18 +47,10 @@ function expectLabelFor(html: string, id: string) {
 
 describe("filter panel accessibility", () => {
   beforeEach(() => {
-    Object.assign(filters, {
-      q: undefined,
-      platform: undefined,
-      genre: undefined,
+    filters = {
       tag: ["RPG"],
-      minRating: undefined,
-      maxRating: undefined,
-      yearFrom: undefined,
-      yearTo: undefined,
-      sort: undefined,
       featured: true,
-    });
+    };
   });
 
   it("renders explicit label associations for checkbox buttons", () => {
@@ -78,12 +70,13 @@ describe("filter panel accessibility", () => {
   });
 
   it("announces invalid range relationships without changing entered values", () => {
-    Object.assign(filters, {
+    filters = {
+      ...filters,
       minRating: 9,
       maxRating: 5,
       yearFrom: 2023,
       yearTo: 2019,
-    });
+    };
 
     const html = renderFilterPanel();
 
