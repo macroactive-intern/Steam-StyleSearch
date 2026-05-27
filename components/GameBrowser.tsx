@@ -73,8 +73,9 @@ export function GameBrowser({
   }, []);
 
   useEffect(() => {
+    loadGames();
     return () => abortControllerRef.current?.abort();
-  }, []);
+  }, [loadGames]);
 
   return (
     <div

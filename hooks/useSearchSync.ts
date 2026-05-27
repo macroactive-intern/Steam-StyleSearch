@@ -154,6 +154,9 @@ export function useSearchSync(delay = 300) {
     [handleClear],
   );
 
+  // Intentionally resets the displayed value to the URL-committed state on
+  // focus/blur so the input always reflects what's actually in the URL when
+  // the user starts or finishes editing. Any in-progress draft is discarded.
   const handleFocus = useCallback(() => {
     dispatch({ type: "focus", value: urlSearchValue });
   }, [urlSearchValue]);

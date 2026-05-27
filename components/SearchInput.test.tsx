@@ -64,6 +64,33 @@ describe("SearchInput", () => {
     });
   });
 
+  it("discards a partial draft and resets to the URL value on blur", () => {
+    render(<SearchInput delay={300} />);
+    const input = screen.getByRole("searchbox", { name: "Search games" });
+
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "dark sol" } });
+
+    // Blur before the debounce fires — draft should be discarded
+    act(() => vi.advanceTimersByTime(100));
+    fireEvent.blur(input);
+
+    expect(input).toHaveProperty("value", "");
+    expect(gameFiltersMock.setters.setFilters).not.toHaveBeenCalled();
+  });
+
+  it("resets to the URL value again on refocus after a discarded draft", () => {
+    render(<SearchInput delay={300} />);
+    const input = screen.getByRole("searchbox", { name: "Search games" });
+
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "dark sol" } });
+    fireEvent.blur(input);
+    fireEvent.focus(input);
+
+    expect(input).toHaveProperty("value", "");
+  });
+
   it("cancels a pending debounce when URL filters change externally", () => {
     const { rerender } = render(<SearchInput delay={300} />);
     const input = screen.getByRole("searchbox", { name: "Search games" });
