@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import { Star } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Badge } from "@/components/ui/badge";
@@ -15,8 +16,15 @@ export interface VirtualGameListProps {
 function GameCard({ game }: { game: Game }) {
   return (
     <article className="grid min-h-44 gap-4 rounded-lg border bg-card p-4 text-card-foreground shadow-xs sm:grid-cols-[160px_1fr]">
-      <div className="flex aspect-[4/3] items-center justify-center rounded-md border bg-muted text-center text-xs font-medium text-muted-foreground sm:aspect-auto sm:h-full">
-        {game.title}
+      <div className="relative min-h-36 overflow-hidden rounded-md border bg-muted sm:h-full">
+        <Image
+          src={game.coverImage}
+          alt={`${game.title} cover`}
+          fill
+          sizes="160px"
+          unoptimized
+          className="object-cover"
+        />
       </div>
 
       <div className="min-w-0 space-y-3">

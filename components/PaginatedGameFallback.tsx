@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import type { Game } from "@/types/game";
 
@@ -43,6 +44,16 @@ function clampPage(page: number, totalPages: number) {
 function FallbackGameCard({ game }: { game: Game }) {
   return (
     <article className="space-y-3 rounded-lg border bg-card p-4 text-card-foreground">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-md border bg-muted">
+        <Image
+          src={game.coverImage}
+          alt={`${game.title} cover`}
+          fill
+          sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+          unoptimized
+          className="object-cover"
+        />
+      </div>
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="font-semibold">{game.title}</h3>
