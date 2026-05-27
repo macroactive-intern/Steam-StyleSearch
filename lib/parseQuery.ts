@@ -27,6 +27,8 @@ export interface ParseQueryExample {
 const FIELD_PATTERN = /^([a-z]+):(.+)$/i;
 const RATING_PATTERN = /^([<>])(\d+(?:\.\d+)?)$/;
 const YEAR_PATTERN = /^\d{4}$/;
+const YEAR_RANGE_PATTERN = /^(\d{4})-(\d{4})$/;
+const YEAR_BOUND_PATTERN = /^([<>]=?)(\d{4})$/;
 
 function createEmptyFilters(): ParsedQueryFilters {
   return {
@@ -87,14 +89,39 @@ function parseRating(value: string, filters: ParsedQueryFilters) {
 }
 
 function parseYear(value: string, filters: ParsedQueryFilters) {
-  if (!YEAR_PATTERN.test(value)) {
+  if (YEAR_PATTERN.test(value)) {
+    const year = Number(value);
+    filters.yearFrom = year;
+    filters.yearTo = year;
+
+    return true;
+  }
+
+  const rangeMatch = value.match(YEAR_RANGE_PATTERN);
+
+  if (rangeMatch) {
+    const [, fromYear, toYear] = rangeMatch;
+    filters.yearFrom = Number(fromYear);
+    filters.yearTo = Number(toYear);
+
+    return true;
+  }
+
+  const boundMatch = value.match(YEAR_BOUND_PATTERN);
+
+  if (!boundMatch) {
     return false;
   }
 
-  const year = Number(value);
-  filters.yearFrom = year;
-  filters.yearTo = year;
+  const [, operator, yearValue] = boundMatch;
+  const year = Number(yearValue);
 
+  if (operator.startsWith(">")) {
+    filters.yearFrom = year;
+    return true;
+  }
+
+  filters.yearTo = year;
   return true;
 }
 
@@ -170,15 +197,15 @@ export const parseQueryExamples: readonly ParseQueryExample[] = [
     },
   },
   {
-    input: "rating:<6 year:2020 tag:co-op indie gem",
+    input: "rating:<6 year:2018-2022 tag:co-op indie gem",
     output: {
-      raw: "rating:<6 year:2020 tag:co-op indie gem",
+      raw: "rating:<6 year:2018-2022 tag:co-op indie gem",
       terms: ["indie", "gem"],
       filters: {
         tags: ["co-op"],
         maxRating: 6,
-        yearFrom: 2020,
-        yearTo: 2020,
+        yearFrom: 2018,
+        yearTo: 2022,
       },
     },
   },

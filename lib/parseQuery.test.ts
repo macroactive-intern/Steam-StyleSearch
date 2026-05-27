@@ -57,6 +57,30 @@ describe("parseQuery", () => {
     });
   });
 
+  it("parses year range filters", () => {
+    const result = parseQuery("year:2018-2022");
+
+    expect(result.filters).toEqual({
+      tags: [],
+      yearFrom: 2018,
+      yearTo: 2022,
+    });
+  });
+
+  it("parses one-sided year range filters", () => {
+    const fromResult = parseQuery("year:>=2018");
+    const toResult = parseQuery("year:<=2022");
+
+    expect(fromResult.filters).toEqual({
+      tags: [],
+      yearFrom: 2018,
+    });
+    expect(toResult.filters).toEqual({
+      tags: [],
+      yearTo: 2022,
+    });
+  });
+
   it("keeps quoted phrases intact as search terms", () => {
     const result = parseQuery('"dark souls"');
 
