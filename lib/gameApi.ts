@@ -1,96 +1,55 @@
+import { z } from "zod";
 import type { Game } from "@/types/game";
 
 export interface GamesResponse {
   games: Game[];
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
+const requiredStringSchema = z.string().trim().min(1);
+const finiteNumberSchema = z.number().refine(Number.isFinite);
+const coverImageSchema = requiredStringSchema.refine(
+  (coverImage) =>
+    coverImage.startsWith("/") || coverImage.startsWith("https://"),
+);
+const tagsSchema = z.array(z.unknown()).transform((tags) =>
+  tags
+    .map((tag) => requiredStringSchema.safeParse(tag))
+    .filter((result): result is z.ZodSafeParseSuccess<string> => result.success)
+    .map((result) => result.data),
+);
 
-function readString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim() ? value : undefined;
-}
+export const gameSchema: z.ZodType<Game> = z.object({
+  id: requiredStringSchema,
+  title: requiredStringSchema,
+  description: requiredStringSchema,
+  platform: requiredStringSchema,
+  genre: requiredStringSchema,
+  tags: tagsSchema,
+  rating: finiteNumberSchema,
+  releaseYear: finiteNumberSchema,
+  featured: z.boolean(),
+  coverImage: coverImageSchema,
+});
 
-function readNumber(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
-}
-
-function readBoolean(value: unknown): boolean | undefined {
-  return typeof value === "boolean" ? value : undefined;
-}
-
-function readTags(value: unknown): string[] | undefined {
-  if (!Array.isArray(value)) {
-    return undefined;
-  }
-
-  return value
-    .map((tag) => readString(tag))
-    .filter((tag): tag is string => Boolean(tag))
-    .map((tag) => tag.trim());
-}
-
-function readCoverImage(value: unknown): string | undefined {
-  const coverImage = readString(value)?.trim();
-
-  return coverImage?.startsWith("/") || coverImage?.startsWith("https://")
-    ? coverImage
-    : undefined;
-}
+export const gamesResponseSchema = z.object({
+  games: z.array(z.unknown()).default([]),
+});
 
 export function sanitizeGame(value: unknown): Game | undefined {
-  if (!isRecord(value)) {
-    return undefined;
-  }
+  const result = gameSchema.safeParse(value);
 
-  const id = readString(value.id);
-  const title = readString(value.title);
-  const description = readString(value.description);
-  const platform = readString(value.platform);
-  const genre = readString(value.genre);
-  const tags = readTags(value.tags);
-  const rating = readNumber(value.rating);
-  const releaseYear = readNumber(value.releaseYear);
-  const featured = readBoolean(value.featured);
-  const coverImage = readCoverImage(value.coverImage);
-
-  if (
-    !id ||
-    !title ||
-    !description ||
-    !platform ||
-    !genre ||
-    !tags ||
-    rating === undefined ||
-    releaseYear === undefined ||
-    featured === undefined ||
-    !coverImage
-  ) {
-    return undefined;
-  }
-
-  return {
-    id,
-    title,
-    description,
-    platform,
-    genre,
-    tags,
-    rating,
-    releaseYear,
-    featured,
-    coverImage,
-  };
+  return result.success ? result.data : undefined;
 }
 
 export function sanitizeGamesResponse(value: unknown): GamesResponse {
-  if (!isRecord(value) || !Array.isArray(value.games)) {
+  const result = gamesResponseSchema.safeParse(value);
+
+  if (!result.success) {
     return { games: [] };
   }
 
   return {
-    games: value.games
+    games: result.data.games
       .map(sanitizeGame)
       .filter((game): game is Game => Boolean(game)),
   };
