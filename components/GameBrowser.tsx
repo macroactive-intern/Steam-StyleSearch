@@ -46,10 +46,6 @@ export function GameBrowser({
     setError(undefined);
 
     try {
-      if (controller.signal.aborted) {
-        return;
-      }
-
       const response = await fetch("/api/games", {
         signal: controller.signal,
       });

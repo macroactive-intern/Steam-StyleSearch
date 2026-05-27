@@ -51,6 +51,7 @@ describe("filter panel accessibility", () => {
       tag: ["RPG"],
       featured: true,
     };
+    Object.values(setters).forEach((setter) => setter.mockClear());
   });
 
   it("renders explicit label associations for checkbox buttons", () => {
