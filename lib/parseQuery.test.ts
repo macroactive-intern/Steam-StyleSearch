@@ -103,6 +103,20 @@ describe("parseQuery", () => {
     });
   });
 
+  it("parses strict year bounds by excluding the provided year", () => {
+    const afterResult = parseQuery("year:>2018");
+    const beforeResult = parseQuery("year:<2022");
+
+    expect(afterResult.filters).toEqual({
+      tags: [],
+      yearFrom: 2019,
+    });
+    expect(beforeResult.filters).toEqual({
+      tags: [],
+      yearTo: 2021,
+    });
+  });
+
   it("keeps quoted phrases intact as search terms", () => {
     const result = parseQuery('"dark souls"');
 

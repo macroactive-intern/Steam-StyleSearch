@@ -117,8 +117,16 @@ function parseYear(value: string): ParsedFilterPatch | undefined {
   const [, operator, yearValue] = boundMatch;
   const year = Number(yearValue);
 
-  if (operator.startsWith(">")) {
+  if (operator === ">") {
+    return { yearFrom: year + 1 };
+  }
+
+  if (operator === ">=") {
     return { yearFrom: year };
+  }
+
+  if (operator === "<") {
+    return { yearTo: year - 1 };
   }
 
   return { yearTo: year };
