@@ -235,7 +235,12 @@ export function FilterPanel({
 
       <fieldset className="mt-4">
         <legend className="mb-2 text-sm font-medium">Tags</legend>
-        <div className="grid max-h-56 gap-2 overflow-auto rounded-lg border p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div
+          role="group"
+          aria-label="Tags, scroll to see more"
+          tabIndex={0}
+          className="grid max-h-56 gap-2 overflow-auto rounded-lg border p-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        >
           {tags.map((tag, index) => (
             <div
               key={tag}
