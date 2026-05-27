@@ -6,8 +6,8 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useReducer,
   useRef,
-  useState,
 } from "react";
 import { EMPTY_GAME_FILTER_UPDATES, useGameFilters } from "@/hooks/useGameFilters";
 import { parseQuery } from "@/lib/parseQuery";
@@ -34,10 +34,53 @@ interface SearchSyncState {
   value: string;
 }
 
+type SearchSyncAction =
+  | { type: "urlChanged"; value: string }
+  | { type: "inputChanged"; value: string }
+  | { type: "focus"; value: string }
+  | { type: "blur"; value: string }
+  | { type: "clear" };
+
+function searchSyncReducer(
+  state: SearchSyncState,
+  action: SearchSyncAction,
+): SearchSyncState {
+  switch (action.type) {
+    case "urlChanged":
+      return {
+        ...state,
+        lastUrlSearchValue: action.value,
+        value: state.isFocused ? state.value : action.value,
+      };
+    case "inputChanged":
+      return {
+        ...state,
+        value: action.value,
+      };
+    case "focus":
+      return {
+        ...state,
+        isFocused: true,
+        value: action.value,
+      };
+    case "blur":
+      return {
+        ...state,
+        isFocused: false,
+        value: action.value,
+      };
+    case "clear":
+      return {
+        ...state,
+        value: "",
+      };
+  }
+}
+
 export function useSearchSync(delay = 300) {
   const { filters, setters } = useGameFilters();
   const urlSearchValue = useMemo(() => filtersToSearchValue(filters), [filters]);
-  const [state, setState] = useState<SearchSyncState>({
+  const [state, dispatch] = useReducer(searchSyncReducer, {
     isFocused: false,
     lastUrlSearchValue: urlSearchValue,
     value: urlSearchValue,
@@ -64,11 +107,7 @@ export function useSearchSync(delay = 300) {
   }, [clearPendingUpdate, urlSearchValue]);
 
   if (urlSearchValue !== state.lastUrlSearchValue) {
-    setState({
-      ...state,
-      lastUrlSearchValue: urlSearchValue,
-      value: state.isFocused ? state.value : urlSearchValue,
-    });
+    dispatch({ type: "urlChanged", value: urlSearchValue });
   }
 
   const scheduleUrlUpdate = useCallback(
@@ -93,7 +132,7 @@ export function useSearchSync(delay = 300) {
     (event: ChangeEvent<HTMLInputElement>) => {
       const nextValue = event.target.value;
 
-      setState((current) => ({ ...current, value: nextValue }));
+      dispatch({ type: "inputChanged", value: nextValue });
       scheduleUrlUpdate(nextValue);
     },
     [scheduleUrlUpdate],
@@ -101,7 +140,7 @@ export function useSearchSync(delay = 300) {
 
   const handleClear = useCallback(() => {
     clearPendingUpdate();
-    setState((current) => ({ ...current, value: "" }));
+    dispatch({ type: "clear" });
     setters.setFilters(EMPTY_GAME_FILTER_UPDATES);
   }, [clearPendingUpdate, setters]);
 
@@ -115,22 +154,20 @@ export function useSearchSync(delay = 300) {
     [handleClear],
   );
 
+  const handleFocus = useCallback(() => {
+    dispatch({ type: "focus", value: urlSearchValue });
+  }, [urlSearchValue]);
+
+  const handleBlur = useCallback(() => {
+    dispatch({ type: "blur", value: urlSearchValue });
+  }, [urlSearchValue]);
+
   return {
     value: state.value,
     handleChange,
     handleClear,
     handleKeyDown,
-    handleFocus: () =>
-      setState((current) => ({
-        ...current,
-        isFocused: true,
-        value: urlSearchValue,
-      })),
-    handleBlur: () =>
-      setState((current) => ({
-        ...current,
-        isFocused: false,
-        value: urlSearchValue,
-      })),
+    handleFocus,
+    handleBlur,
   };
 }
