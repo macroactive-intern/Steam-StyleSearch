@@ -116,6 +116,12 @@ describe("filterGames", () => {
     expect(ids(result)).toEqual(["neon-racers", "quiet-farm"]);
   });
 
+  it("normalizes reversed rating ranges", () => {
+    const result = filterGames(games, { minRating: 8.5, maxRating: 7 });
+
+    expect(ids(result)).toEqual(["neon-racers", "quiet-farm"]);
+  });
+
   it("includes games exactly on the maximum rating boundary", () => {
     const result = filterGames(games, { maxRating: 7.4 });
 
@@ -124,6 +130,12 @@ describe("filterGames", () => {
 
   it("filters by release year range", () => {
     const result = filterGames(games, { yearFrom: 2019, yearTo: 2021 });
+
+    expect(ids(result)).toEqual(["ember-quest", "quiet-farm", "alpha-line"]);
+  });
+
+  it("normalizes reversed release year ranges", () => {
+    const result = filterGames(games, { yearFrom: 2021, yearTo: 2019 });
 
     expect(ids(result)).toEqual(["ember-quest", "quiet-farm", "alpha-line"]);
   });

@@ -36,6 +36,19 @@ describe("useGameFilters URL helpers", () => {
     expect(filters.sort).toBeUndefined();
   });
 
+  it("normalizes reversed rating and year ranges from URL params", () => {
+    const filters = parseUrlGameFilters(
+      new URLSearchParams(
+        "minRating=9&maxRating=5&yearFrom=2023&yearTo=2019",
+      ),
+    );
+
+    expect(filters.minRating).toBe(5);
+    expect(filters.maxRating).toBe(9);
+    expect(filters.yearFrom).toBe(2019);
+    expect(filters.yearTo).toBe(2023);
+  });
+
   it("applies updates while preserving unrelated params and resetting pagination", () => {
     const query = applyGameFilterUpdates("utm=campaign&tag=rpg&page=2", {
       platform: "Nintendo Switch",
@@ -51,6 +64,19 @@ describe("useGameFilters URL helpers", () => {
       "cozy",
       "farming",
     ]);
+  });
+
+  it("orders rating and year ranges when applying URL updates", () => {
+    const query = applyGameFilterUpdates(
+      "minRating=9&maxRating=5&yearFrom=2023&yearTo=2019",
+      { q: "souls" },
+    );
+    const params = new URLSearchParams(query);
+
+    expect(params.get("minRating")).toBe("5");
+    expect(params.get("maxRating")).toBe("9");
+    expect(params.get("yearFrom")).toBe("2019");
+    expect(params.get("yearTo")).toBe("2023");
   });
 
   it("clears filters and pagination while preserving unrelated params", () => {

@@ -96,6 +96,28 @@ function readSort(params: URLSearchParams): FilterSort | undefined {
     : undefined;
 }
 
+function orderRange(
+  from: number | undefined,
+  to: number | undefined,
+): { from?: number; to?: number } {
+  if (typeof from === "number" && typeof to === "number" && from > to) {
+    return { from: to, to: from };
+  }
+
+  return { from, to };
+}
+
+function normalizeRangeParams(
+  params: URLSearchParams,
+  fromKey: GameFilterKey,
+  toKey: GameFilterKey,
+) {
+  const range = orderRange(readNumber(params, fromKey), readNumber(params, toKey));
+
+  applyParam(params, fromKey, range.from);
+  applyParam(params, toKey, range.to);
+}
+
 function applyParam(params: URLSearchParams, key: GameFilterKey, value: FilterValue) {
   params.delete(key);
 
@@ -112,15 +134,24 @@ function applyParam(params: URLSearchParams, key: GameFilterKey, value: FilterVa
 }
 
 export function parseUrlGameFilters(params: URLSearchParams): UrlGameFilters {
+  const ratingRange = orderRange(
+    readNumber(params, "minRating"),
+    readNumber(params, "maxRating"),
+  );
+  const yearRange = orderRange(
+    readNumber(params, "yearFrom"),
+    readNumber(params, "yearTo"),
+  );
+
   return {
     q: readString(params, "q"),
     platform: readString(params, "platform"),
     genre: readString(params, "genre"),
     tag: params.getAll("tag").filter(Boolean),
-    minRating: readNumber(params, "minRating"),
-    maxRating: readNumber(params, "maxRating"),
-    yearFrom: readNumber(params, "yearFrom"),
-    yearTo: readNumber(params, "yearTo"),
+    minRating: ratingRange.from,
+    maxRating: ratingRange.to,
+    yearFrom: yearRange.from,
+    yearTo: yearRange.to,
     sort: readSort(params),
     featured: readBoolean(params, "featured"),
   };
@@ -137,6 +168,9 @@ export function applyGameFilterUpdates(
   for (const [key, value] of Object.entries(updates)) {
     applyParam(params, key as GameFilterKey, value);
   }
+
+  normalizeRangeParams(params, "minRating", "maxRating");
+  normalizeRangeParams(params, "yearFrom", "yearTo");
 
   return params.toString();
 }
