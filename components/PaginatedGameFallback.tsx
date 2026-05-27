@@ -69,6 +69,32 @@ function FallbackGameCard({ game }: { game: Game }) {
   );
 }
 
+function PaginationLink({
+  disabled,
+  href,
+  children,
+}: {
+  disabled: boolean;
+  href: string;
+  children: string;
+}) {
+  const className = "rounded-lg border px-3 py-2 text-sm font-medium";
+
+  if (disabled) {
+    return (
+      <span aria-disabled="true" className={`${className} opacity-50`}>
+        {children}
+      </span>
+    );
+  }
+
+  return (
+    <a href={href} className={className}>
+      {children}
+    </a>
+  );
+}
+
 export function PaginatedGameFallback({
   games,
   page,
@@ -104,23 +130,21 @@ export function PaginatedGameFallback({
         aria-label="Game pagination"
         className="flex flex-wrap items-center justify-between gap-3 border-t pt-4"
       >
-        <a
+        <PaginationLink
           href={buildPageHref(currentPage - 1, searchParams)}
-          aria-disabled={currentPage === 1}
-          className="rounded-lg border px-3 py-2 text-sm font-medium aria-disabled:pointer-events-none aria-disabled:opacity-50"
+          disabled={currentPage === 1}
         >
           Previous
-        </a>
+        </PaginationLink>
         <span className="text-sm text-muted-foreground">
           Page {currentPage} of {totalPages}
         </span>
-        <a
+        <PaginationLink
           href={buildPageHref(currentPage + 1, searchParams)}
-          aria-disabled={currentPage === totalPages}
-          className="rounded-lg border px-3 py-2 text-sm font-medium aria-disabled:pointer-events-none aria-disabled:opacity-50"
+          disabled={currentPage === totalPages}
         >
           Next
-        </a>
+        </PaginationLink>
       </nav>
     </section>
   );
