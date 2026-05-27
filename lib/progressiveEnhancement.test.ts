@@ -21,4 +21,12 @@ describe("progressive enhancement toggle", () => {
     expect(css).toContain("display: flex;");
     expect(css).toContain("display: none;");
   });
+
+  it("uses a visible JS-enhanced Suspense fallback instead of null", async () => {
+    const page = await readFile("app/page.tsx", "utf8");
+
+    expect(page).toContain("fallback={<GameBrowserSuspenseFallback />}");
+    expect(page).toContain("data-js-enhanced");
+    expect(page).not.toContain("fallback={null}");
+  });
 });
