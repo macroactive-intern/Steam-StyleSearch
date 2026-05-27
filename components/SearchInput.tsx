@@ -6,8 +6,8 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useState,
   useRef,
+  useState,
 } from "react";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ export function SearchInput({
   const pendingUpdateRef = useRef<number | undefined>(undefined);
   const [lastUrlSearchValue, setLastUrlSearchValue] = useState(urlSearchValue);
   const [value, setValue] = useState(urlSearchValue);
+  const [isFocused, setIsFocused] = useState(false);
   const controlledFiltersKey = useMemo(
     () =>
       JSON.stringify({
@@ -59,14 +60,13 @@ export function SearchInput({
 
   if (urlSearchValue !== lastUrlSearchValue) {
     setLastUrlSearchValue(urlSearchValue);
-    setValue(urlSearchValue);
+
+    if (!isFocused) {
+      setValue(urlSearchValue);
+    }
   }
 
-  useEffect(() => {
-    clearPendingUpdate();
-
-    return clearPendingUpdate;
-  }, [clearPendingUpdate, urlSearchValue]);
+  useEffect(() => clearPendingUpdate, [clearPendingUpdate]);
 
   const scheduleUrlUpdate = useCallback(
     (nextValue: string) => {
@@ -134,6 +134,8 @@ export function SearchInput({
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         placeholder={placeholder}
         className="pr-10 pl-9"
         autoComplete="off"
