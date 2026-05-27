@@ -46,3 +46,12 @@ export function getGenres(): string[] {
 export function getTags(): string[] {
   return uniqueSorted(games.flatMap((game) => game.tags));
 }
+
+export function getReleaseYearRange(): { min: number; max: number } {
+  const releaseYears = games.map((game) => game.releaseYear);
+
+  return {
+    min: Math.min(...releaseYears),
+    max: Math.max(...releaseYears),
+  };
+}

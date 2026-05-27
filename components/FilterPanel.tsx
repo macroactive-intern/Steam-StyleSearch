@@ -15,7 +15,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGameFilters } from "@/hooks/useGameFilters";
-import { getGenres, getPlatforms, getTags } from "@/lib/games";
+import {
+  getGenres,
+  getPlatforms,
+  getReleaseYearRange,
+  getTags,
+} from "@/lib/games";
 import { cn } from "@/lib/utils";
 import type { FilterSort } from "@/types/game";
 
@@ -31,6 +36,7 @@ export interface FilterPanelProps {
   platforms?: string[];
   genres?: string[];
   tags?: string[];
+  releaseYearRange?: { min: number; max: number };
 }
 
 function parseNumberValue(value: string): number | undefined {
@@ -48,11 +54,16 @@ export function FilterPanel({
   platforms,
   genres,
   tags,
+  releaseYearRange,
 }: FilterPanelProps) {
   const { filters, setters, clearAll } = useGameFilters();
   const platformOptions = useMemo(() => platforms ?? getPlatforms(), [platforms]);
   const genreOptions = useMemo(() => genres ?? getGenres(), [genres]);
   const tagOptions = useMemo(() => tags ?? getTags(), [tags]);
+  const yearRange = useMemo(
+    () => releaseYearRange ?? getReleaseYearRange(),
+    [releaseYearRange],
+  );
   const selectedTags = useMemo(() => new Set(filters.tag), [filters.tag]);
 
   function toggleTag(tag: string, checked: boolean) {
@@ -210,8 +221,8 @@ export function FilterPanel({
             <Input
               id="filter-year-from"
               type="number"
-              min={1995}
-              max={2026}
+              min={yearRange.min}
+              max={yearRange.max}
               value={filters.yearFrom ?? ""}
               onChange={(event) =>
                 setters.setYearFrom(parseNumberValue(event.target.value))
@@ -223,8 +234,8 @@ export function FilterPanel({
             <Input
               id="filter-year-to"
               type="number"
-              min={1995}
-              max={2026}
+              min={yearRange.min}
+              max={yearRange.max}
               value={filters.yearTo ?? ""}
               onChange={(event) =>
                 setters.setYearTo(parseNumberValue(event.target.value))
