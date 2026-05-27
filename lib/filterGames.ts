@@ -1,4 +1,3 @@
-import { orderRange } from "@/lib/range";
 import type { FilterSort, Game, GameFilters } from "@/types/game";
 
 export type FilterGamesFilters = GameFilters;
@@ -62,12 +61,13 @@ export function compareNumbers(first: number, second: number): number {
   return first - second;
 }
 
+function hasInvertedRange(from?: number, to?: number): boolean {
+  return typeof from === "number" && typeof to === "number" && from > to;
+}
+
 export function normalizeFilters(
   filters: FilterGamesFilters,
 ): Required<Pick<FilterGamesFilters, "tag">> & FilterGamesFilters {
-  const ratingRange = orderRange(filters.minRating, filters.maxRating);
-  const yearRange = orderRange(filters.yearFrom, filters.yearTo);
-
   return {
     ...filters,
     q: filters.q?.trim(),
@@ -76,10 +76,6 @@ export function normalizeFilters(
       : undefined,
     genre: filters.genre ? normalizeFilterValue(filters.genre) : undefined,
     tag: normalizeFilterValues(filters.tag),
-    minRating: ratingRange.from,
-    maxRating: ratingRange.to,
-    yearFrom: yearRange.from,
-    yearTo: yearRange.to,
   };
 }
 
@@ -155,6 +151,13 @@ export function filterGames(
   games: readonly Game[],
   filters: FilterGamesFilters = {},
 ): Game[] {
+  if (
+    hasInvertedRange(filters.minRating, filters.maxRating) ||
+    hasInvertedRange(filters.yearFrom, filters.yearTo)
+  ) {
+    return [];
+  }
+
   const normalizedFilters = normalizeFilters(filters);
   const filteredGames = games.filter((game) =>
     gameMatchesFilters(game, normalizedFilters),
