@@ -10,12 +10,11 @@ export function buildPathWithSearch(
   pathname: string,
   searchParams?: SearchParamsRecord | URLSearchParams,
 ): string {
-  const params =
-    searchParams instanceof URLSearchParams
-      ? new URLSearchParams(searchParams)
-      : new URLSearchParams();
+  const params = new URLSearchParams();
 
-  if (searchParams && !(searchParams instanceof URLSearchParams)) {
+  if (searchParams instanceof URLSearchParams) {
+    searchParams.forEach((value, key) => params.append(key, value));
+  } else if (searchParams) {
     for (const [key, value] of Object.entries(searchParams)) {
       if (value === undefined) {
         continue;
