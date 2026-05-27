@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 const STORAGE_KEY = "steam-style-search:filter-presets";
 const STORAGE_EVENT = "game-filter-presets-change";
+const MAX_PRESET_NAME_LENGTH = 50;
 const EMPTY_PRESETS: FilterPreset[] = [];
 
 export interface FilterPreset {
@@ -135,6 +136,7 @@ export function SavedFilterPresets({ className }: SavedFilterPresetsProps) {
             onChange={(event) => setPresetName(event.target.value)}
             placeholder="My RPG search"
             autoComplete="off"
+            maxLength={MAX_PRESET_NAME_LENGTH}
           />
           <Button type="submit" disabled={!presetName.trim()}>
             Save
