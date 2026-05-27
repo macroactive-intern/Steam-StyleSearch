@@ -1,18 +1,6 @@
-import type { FilterSort, Game } from "@/types/game";
+import type { FilterSort, Game, GameFilters } from "@/types/game";
 
-export interface FilterGamesFilters {
-  q?: string;
-  platform?: string;
-  genre?: string;
-  tag?: string[];
-  tags?: string[];
-  minRating?: number;
-  maxRating?: number;
-  yearFrom?: number;
-  yearTo?: number;
-  featured?: boolean;
-  sort?: FilterSort;
-}
+export type FilterGamesFilters = GameFilters;
 
 type GameSorter = (first: Game, second: Game) => number;
 

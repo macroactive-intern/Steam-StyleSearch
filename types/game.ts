@@ -18,9 +18,15 @@ export type FilterSort =
   | "year_desc";
 
 export interface GameFilters {
+  q?: string;
   platform?: string;
   genre?: string;
+  tag?: string[];
   tags?: string[];
+  minRating?: number;
+  maxRating?: number;
+  yearFrom?: number;
+  yearTo?: number;
   featured?: boolean;
   sort?: FilterSort;
 }

@@ -1,8 +1,8 @@
 import gamesData from "@/data/games.json";
 import { filterGames, type FilterGamesFilters } from "@/lib/filterGames";
-import type { Game } from "@/types/game";
+import type { Game, GameFilters } from "@/types/game";
 
-export interface GetGamesOptions extends FilterGamesFilters {
+export interface GetGamesOptions extends GameFilters {
   search?: string;
 }
 

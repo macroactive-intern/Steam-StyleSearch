@@ -1,9 +1,8 @@
 import { Suspense } from "react";
 import { GameBrowser } from "@/components/GameBrowser";
 import { PaginatedGameFallback } from "@/components/PaginatedGameFallback";
-import { filterGames, type FilterGamesFilters } from "@/lib/filterGames";
 import { getGames } from "@/lib/games";
-import type { FilterSort } from "@/types/game";
+import type { FilterSort, GameFilters } from "@/types/game";
 
 type PageSearchParams = Promise<Record<string, string | string[] | undefined>>;
 type ResolvedSearchParams = Awaited<PageSearchParams>;
@@ -73,7 +72,7 @@ function getPageNumber(searchParams: ResolvedSearchParams) {
 
 function getFallbackFilters(
   searchParams: ResolvedSearchParams,
-): FilterGamesFilters {
+): GameFilters {
   return {
     q: readFirst(searchParams, "q"),
     platform: readFirst(searchParams, "platform"),
@@ -96,7 +95,7 @@ export default async function Home({
   const games = getGames();
   const resolvedSearchParams = await searchParams;
   const page = getPageNumber(resolvedSearchParams);
-  const fallbackGames = filterGames(games, getFallbackFilters(resolvedSearchParams));
+  const fallbackGames = getGames(getFallbackFilters(resolvedSearchParams));
 
   return (
     <>
