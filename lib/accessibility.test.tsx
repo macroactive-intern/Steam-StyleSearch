@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { UrlGameFilters } from "@/hooks/useGameFilters";
 
 const filters: UrlGameFilters = {
@@ -46,6 +46,21 @@ function expectLabelFor(html: string, id: string) {
 }
 
 describe("filter panel accessibility", () => {
+  beforeEach(() => {
+    Object.assign(filters, {
+      q: undefined,
+      platform: undefined,
+      genre: undefined,
+      tag: ["RPG"],
+      minRating: undefined,
+      maxRating: undefined,
+      yearFrom: undefined,
+      yearTo: undefined,
+      sort: undefined,
+      featured: true,
+    });
+  });
+
   it("renders explicit label associations for checkbox buttons", () => {
     const html = renderFilterPanel();
 
@@ -60,5 +75,25 @@ describe("filter panel accessibility", () => {
     expect(html).toContain('role="group"');
     expect(html).toContain('aria-label="Tags, scroll to see more"');
     expect(html).toContain('tabindex="0"');
+  });
+
+  it("announces invalid range relationships without changing entered values", () => {
+    Object.assign(filters, {
+      minRating: 9,
+      maxRating: 5,
+      yearFrom: 2023,
+      yearTo: 2019,
+    });
+
+    const html = renderFilterPanel();
+
+    expect(html).toContain('value="9"');
+    expect(html).toContain('value="5"');
+    expect(html).toContain('value="2023"');
+    expect(html).toContain('value="2019"');
+    expect(html).toContain("Min rating must be less than or equal to max rating.");
+    expect(html).toContain("From year must be less than or equal to end year.");
+    expect(html).toContain('aria-describedby="filter-rating-range-error"');
+    expect(html).toContain('aria-describedby="filter-year-range-error"');
   });
 });

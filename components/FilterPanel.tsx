@@ -43,6 +43,10 @@ function parseNumberValue(value: string): number | undefined {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+function hasInvertedRange(from?: number, to?: number) {
+  return typeof from === "number" && typeof to === "number" && from > to;
+}
+
 export function FilterPanel({
   className,
   platforms,
@@ -52,6 +56,11 @@ export function FilterPanel({
 }: FilterPanelProps) {
   const { filters, setters, clearAll } = useGameFilters();
   const selectedTags = useMemo(() => new Set(filters.tag), [filters.tag]);
+  const hasInvalidRatingRange = hasInvertedRange(
+    filters.minRating,
+    filters.maxRating,
+  );
+  const hasInvalidYearRange = hasInvertedRange(filters.yearFrom, filters.yearTo);
 
   function toggleTag(tag: string, checked: boolean) {
     const nextTags = checked
@@ -178,6 +187,10 @@ export function FilterPanel({
               min={1}
               max={10}
               step={0.1}
+              aria-invalid={hasInvalidRatingRange}
+              aria-describedby={
+                hasInvalidRatingRange ? "filter-rating-range-error" : undefined
+              }
               value={filters.minRating ?? ""}
               onChange={(event) =>
                 setters.setMinRating(parseNumberValue(event.target.value))
@@ -192,12 +205,24 @@ export function FilterPanel({
               min={1}
               max={10}
               step={0.1}
+              aria-invalid={hasInvalidRatingRange}
+              aria-describedby={
+                hasInvalidRatingRange ? "filter-rating-range-error" : undefined
+              }
               value={filters.maxRating ?? ""}
               onChange={(event) =>
                 setters.setMaxRating(parseNumberValue(event.target.value))
               }
             />
           </div>
+          {hasInvalidRatingRange ? (
+            <p
+              id="filter-rating-range-error"
+              className="col-span-2 text-sm text-destructive"
+            >
+              Min rating must be less than or equal to max rating.
+            </p>
+          ) : null}
         </fieldset>
 
         <fieldset className="grid grid-cols-2 gap-3">
@@ -211,6 +236,10 @@ export function FilterPanel({
               type="number"
               min={releaseYearRange.min}
               max={releaseYearRange.max}
+              aria-invalid={hasInvalidYearRange}
+              aria-describedby={
+                hasInvalidYearRange ? "filter-year-range-error" : undefined
+              }
               value={filters.yearFrom ?? ""}
               onChange={(event) =>
                 setters.setYearFrom(parseNumberValue(event.target.value))
@@ -224,12 +253,24 @@ export function FilterPanel({
               type="number"
               min={releaseYearRange.min}
               max={releaseYearRange.max}
+              aria-invalid={hasInvalidYearRange}
+              aria-describedby={
+                hasInvalidYearRange ? "filter-year-range-error" : undefined
+              }
               value={filters.yearTo ?? ""}
               onChange={(event) =>
                 setters.setYearTo(parseNumberValue(event.target.value))
               }
             />
           </div>
+          {hasInvalidYearRange ? (
+            <p
+              id="filter-year-range-error"
+              className="col-span-2 text-sm text-destructive"
+            >
+              From year must be less than or equal to end year.
+            </p>
+          ) : null}
         </fieldset>
       </div>
 

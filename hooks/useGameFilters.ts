@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { orderRange } from "@/lib/range";
 import { isFilterSort, type FilterSort } from "@/types/game";
 
 const FILTER_KEYS = [
@@ -89,17 +88,6 @@ function readSort(params: SearchParamsReader): FilterSort | undefined {
   return isFilterSort(value) ? value : undefined;
 }
 
-function normalizeRangeParams(
-  params: URLSearchParams,
-  fromKey: GameFilterKey,
-  toKey: GameFilterKey,
-) {
-  const range = orderRange(readNumber(params, fromKey), readNumber(params, toKey));
-
-  applyParam(params, fromKey, range.from);
-  applyParam(params, toKey, range.to);
-}
-
 function applyParam(params: URLSearchParams, key: GameFilterKey, value: FilterValue) {
   params.delete(key);
 
@@ -116,24 +104,15 @@ function applyParam(params: URLSearchParams, key: GameFilterKey, value: FilterVa
 }
 
 export function parseUrlGameFilters(params: SearchParamsReader): UrlGameFilters {
-  const ratingRange = orderRange(
-    readNumber(params, "minRating"),
-    readNumber(params, "maxRating"),
-  );
-  const yearRange = orderRange(
-    readNumber(params, "yearFrom"),
-    readNumber(params, "yearTo"),
-  );
-
   return {
     q: readString(params, "q"),
     platform: readString(params, "platform"),
     genre: readString(params, "genre"),
     tag: params.getAll("tag").filter(Boolean),
-    minRating: ratingRange.from,
-    maxRating: ratingRange.to,
-    yearFrom: yearRange.from,
-    yearTo: yearRange.to,
+    minRating: readNumber(params, "minRating"),
+    maxRating: readNumber(params, "maxRating"),
+    yearFrom: readNumber(params, "yearFrom"),
+    yearTo: readNumber(params, "yearTo"),
     sort: readSort(params),
     featured: readBoolean(params, "featured"),
   };
@@ -150,9 +129,6 @@ export function applyGameFilterUpdates(
   for (const [key, value] of Object.entries(updates)) {
     applyParam(params, key as GameFilterKey, value);
   }
-
-  normalizeRangeParams(params, "minRating", "maxRating");
-  normalizeRangeParams(params, "yearFrom", "yearTo");
 
   return params.toString();
 }
