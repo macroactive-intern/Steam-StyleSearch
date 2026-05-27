@@ -2,6 +2,22 @@ import { describe, expect, it } from "vitest";
 import { getGames } from "./games";
 
 describe("getGames", () => {
+  it("uses the same title and description text search scope as the JS path", () => {
+    const results = getGames({ q: "racing" });
+
+    expect(results.length).toBeGreaterThan(0);
+    expect(
+      results.every((game) => {
+        const query = "racing";
+
+        return (
+          game.title.toLowerCase().includes(query) ||
+          game.description.toLowerCase().includes(query)
+        );
+      }),
+    ).toBe(true);
+  });
+
   it("uses case-insensitive platform matching", () => {
     const lowercaseResults = getGames({ platform: "pc" });
     const canonicalResults = getGames({ platform: "PC" });
