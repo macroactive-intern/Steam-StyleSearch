@@ -8,6 +8,7 @@ import { SearchInput } from "@/components/SearchInput";
 import { VirtualGameList } from "@/components/VirtualGameList";
 import { useGameFilters } from "@/hooks/useGameFilters";
 import { filterGames } from "@/lib/filterGames";
+import { sanitizeGamesResponse } from "@/lib/gameApi";
 import type { Game } from "@/types/game";
 
 export interface GameBrowserProps {
@@ -15,10 +16,6 @@ export interface GameBrowserProps {
   genres: string[];
   tags: string[];
   releaseYearRange: { min: number; max: number };
-}
-
-interface GamesResponse {
-  games?: Game[];
 }
 
 export function GameBrowser({
@@ -49,8 +46,8 @@ export function GameBrowser({
           throw new Error("Unable to load games.");
         }
 
-        const data = (await response.json()) as GamesResponse;
-        setGames(Array.isArray(data.games) ? data.games : []);
+        const data: unknown = await response.json();
+        setGames(sanitizeGamesResponse(data).games);
         setError(undefined);
       } catch (loadError) {
         if (controller.signal.aborted) {
