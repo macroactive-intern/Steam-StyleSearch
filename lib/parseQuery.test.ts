@@ -12,6 +12,19 @@ describe("parseQuery", () => {
     expect(result.terms).toEqual(["dark", "souls"]);
   });
 
+  it("parses quoted field values with spaces", () => {
+    const result = parseQuery(
+      'platform:"PlayStation 5" genre:"Action RPG" tag:"open world"',
+    );
+
+    expect(result.filters).toEqual({
+      tags: ["open world"],
+      platform: "PlayStation 5",
+      genre: "Action RPG",
+    });
+    expect(result.terms).toEqual([]);
+  });
+
   it("parses minimum rating filters", () => {
     const result = parseQuery("rating:>8");
 

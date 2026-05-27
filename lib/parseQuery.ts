@@ -44,7 +44,10 @@ function tokenizeQuery(query: string): QueryToken[] {
 
   for (const character of query) {
     if (character === '"') {
-      quoted = true;
+      if (!current) {
+        quoted = true;
+      }
+
       inQuote = !inQuote;
       continue;
     }
