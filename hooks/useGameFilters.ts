@@ -185,6 +185,14 @@ export function clearGameFilterParams(currentSearch: string): string {
   return params.toString();
 }
 
+export function removeGameFilterTag(currentSearch: string, tagToRemove: string): string {
+  const filters = parseUrlGameFilters(new URLSearchParams(currentSearch));
+
+  return applyGameFilterUpdates(currentSearch, {
+    tag: filters.tag.filter((tag) => tag !== tagToRemove),
+  });
+}
+
 export function useGameFilters() {
   const router = useRouter();
   const pathname = usePathname();
@@ -215,6 +223,15 @@ export function useGameFilters() {
     [updateUrl],
   );
 
+  const removeTag = useCallback(
+    (tag: string) => {
+      const query = removeGameFilterTag(searchParamsRef.current, tag);
+      searchParamsRef.current = query;
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    },
+    [pathname, router],
+  );
+
   const clearAll = useCallback(() => {
     const query = clearGameFilterParams(searchParamsRef.current);
     searchParamsRef.current = query;
@@ -228,6 +245,7 @@ export function useGameFilters() {
       setPlatform: (value?: string) => updateUrl({ platform: value }),
       setGenre: (value?: string) => updateUrl({ genre: value }),
       setTag: (value: readonly string[]) => updateUrl({ tag: value }),
+      removeTag,
       setMinRating: (value?: number) => updateUrl({ minRating: value }),
       setMaxRating: (value?: number) => updateUrl({ maxRating: value }),
       setYearFrom: (value?: number) => updateUrl({ yearFrom: value }),
@@ -235,7 +253,7 @@ export function useGameFilters() {
       setSort: (value?: FilterSort) => updateUrl({ sort: value }),
       setFeatured: (value?: boolean) => updateUrl({ featured: value }),
     }),
-    [updateUrl],
+    [removeTag, updateUrl],
   );
 
   return {

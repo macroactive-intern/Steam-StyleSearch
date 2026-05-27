@@ -53,8 +53,7 @@ export function ActiveFilterChips({ className }: ActiveFilterChipsProps) {
     ...filters.tag.map((tag) => ({
       key: `tag:${tag}`,
       label: `tag: ${tag}`,
-      onRemove: () =>
-        setters.setTag(filters.tag.filter((selectedTag) => selectedTag !== tag)),
+      onRemove: () => setters.removeTag(tag),
     })),
     typeof filters.minRating === "number"
       ? {

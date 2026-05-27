@@ -4,6 +4,7 @@ import {
   clearGameFilterParams,
   EMPTY_GAME_FILTER_UPDATES,
   parseUrlGameFilters,
+  removeGameFilterTag,
 } from "./useGameFilters";
 
 describe("useGameFilters URL helpers", () => {
@@ -85,6 +86,23 @@ describe("useGameFilters URL helpers", () => {
     );
 
     expect(query).toBe("utm=campaign");
+  });
+
+  it("removes tags from the latest URL state so rapid removals compose", () => {
+    const afterFirstRemoval = removeGameFilterTag(
+      "utm=campaign&tag=rpg&tag=open-world&tag=co-op&page=2",
+      "rpg",
+    );
+    const afterSecondRemoval = removeGameFilterTag(
+      afterFirstRemoval,
+      "open-world",
+    );
+
+    expect(new URLSearchParams(afterSecondRemoval).get("utm")).toBe("campaign");
+    expect(new URLSearchParams(afterSecondRemoval).get("page")).toBeNull();
+    expect(new URLSearchParams(afterSecondRemoval).getAll("tag")).toEqual([
+      "co-op",
+    ]);
   });
 
   it("empty filter updates clear every filter represented by SearchInput", () => {
