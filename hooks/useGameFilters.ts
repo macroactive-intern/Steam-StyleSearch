@@ -17,6 +17,13 @@ const FILTER_KEYS = [
   "featured",
 ] as const;
 
+const VALID_SORTS = [
+  "rating_desc",
+  "rating_asc",
+  "title_asc",
+  "year_desc",
+] as const satisfies readonly FilterSort[];
+
 export type GameFilterKey = (typeof FILTER_KEYS)[number];
 
 export interface UrlGameFilters {
@@ -79,6 +86,14 @@ function readString(params: URLSearchParams, key: GameFilterKey): string | undef
   return params.get(key)?.trim() || undefined;
 }
 
+function readSort(params: URLSearchParams): FilterSort | undefined {
+  const value = readString(params, "sort");
+
+  return VALID_SORTS.some((sort) => sort === value)
+    ? (value as FilterSort)
+    : undefined;
+}
+
 function applyParam(params: URLSearchParams, key: GameFilterKey, value: FilterValue) {
   params.delete(key);
 
@@ -104,7 +119,7 @@ export function parseUrlGameFilters(params: URLSearchParams): UrlGameFilters {
     maxRating: readNumber(params, "maxRating"),
     yearFrom: readNumber(params, "yearFrom"),
     yearTo: readNumber(params, "yearTo"),
-    sort: readString(params, "sort") as FilterSort | undefined,
+    sort: readSort(params),
     featured: readBoolean(params, "featured"),
   };
 }

@@ -28,6 +28,14 @@ describe("useGameFilters URL helpers", () => {
     });
   });
 
+  it("drops invalid sort params", () => {
+    const filters = parseUrlGameFilters(
+      new URLSearchParams("sort=random_order"),
+    );
+
+    expect(filters.sort).toBeUndefined();
+  });
+
   it("applies updates while preserving unrelated params", () => {
     const query = applyGameFilterUpdates("utm=campaign&tag=rpg&page=2", {
       platform: "Nintendo Switch",
