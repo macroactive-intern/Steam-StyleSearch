@@ -66,7 +66,6 @@ function FallbackGameCard({
             alt=""
             fill
             sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
-            unoptimized
             className="object-cover"
           />
         </div>

@@ -28,8 +28,7 @@ function GameCard({ game, returnTo }: { game: Game; returnTo: string }) {
             src={game.coverImage}
             alt=""
             fill
-            sizes="160px"
-            unoptimized
+            sizes="(min-width: 640px) 160px, 100vw"
             className="object-cover"
           />
         </div>

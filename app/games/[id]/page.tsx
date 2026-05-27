@@ -60,7 +60,6 @@ export default async function GamePage({
             alt={`${game.title} cover`}
             fill
             sizes="(min-width: 1024px) 360px, 100vw"
-            unoptimized
             className="object-cover"
             priority
           />
