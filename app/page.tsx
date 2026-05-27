@@ -13,6 +13,7 @@ import {
   getPageNumber,
   type ResolvedPageSearchParams,
 } from "@/lib/pageSearchParams";
+import { filterGames } from "@/lib/filterGames";
 import { JS_ENHANCEMENT_SCRIPT } from "@/lib/progressiveEnhancement";
 
 type PageSearchParams = Promise<ResolvedPageSearchParams>;
@@ -49,8 +50,13 @@ export default async function Home({
 }) {
   const resolvedSearchParams = await searchParams;
   const page = getPageNumber(resolvedSearchParams);
-  const fallbackGames = getGames(getFallbackFilters(resolvedSearchParams));
+  const allGames = getGames();
+  const fallbackGames = filterGames(
+    allGames,
+    getFallbackFilters(resolvedSearchParams),
+  );
   const filterOptions = {
+    initialGames: allGames,
     platforms: PLATFORMS,
     genres: GENRES,
     tags: TAGS,

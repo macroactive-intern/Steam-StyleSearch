@@ -13,6 +13,7 @@ import { sanitizeGamesResponse } from "@/lib/gameApi";
 import type { Game } from "@/types/game";
 
 export interface GameBrowserProps {
+  initialGames: Game[];
   platforms: string[];
   genres: string[];
   tags: string[];
@@ -20,14 +21,15 @@ export interface GameBrowserProps {
 }
 
 export function GameBrowser({
+  initialGames,
   platforms,
   genres,
   tags,
   releaseYearRange,
 }: GameBrowserProps) {
   const { filters } = useGameFilters();
-  const [games, setGames] = useState<Game[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [games, setGames] = useState<Game[]>(initialGames);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const abortControllerRef = useRef<AbortController | null>(null);
   const filteredGames = useMemo(
@@ -78,15 +80,8 @@ export function GameBrowser({
   }, []);
 
   useEffect(() => {
-    const initialLoadTimeout = setTimeout(() => {
-      void loadGames();
-    }, 0);
-
-    return () => {
-      clearTimeout(initialLoadTimeout);
-      abortControllerRef.current?.abort();
-    };
-  }, [loadGames]);
+    return () => abortControllerRef.current?.abort();
+  }, []);
 
   return (
     <div
