@@ -29,12 +29,29 @@ describe("game API payload sanitization", () => {
         validGame,
         { ...validGame, id: 1 },
         { ...validGame, rating: "high" },
-        { ...validGame, tags: ["Action", 42] },
         { ...validGame, featured: "true" },
       ],
     });
 
     expect(result.games).toEqual([validGame]);
+  });
+
+  it("keeps games with malformed tag entries and drops only the bad tags", () => {
+    const result = sanitizeGamesResponse({
+      games: [
+        {
+          ...validGame,
+          tags: [" Action ", 42, null, "", "Tactical"],
+        },
+      ],
+    });
+
+    expect(result.games).toEqual([
+      {
+        ...validGame,
+        tags: ["Action", "Tactical"],
+      },
+    ]);
   });
 
   it("returns an empty list for non-array responses", () => {

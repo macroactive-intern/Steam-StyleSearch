@@ -21,11 +21,14 @@ function readBoolean(value: unknown): boolean | undefined {
 }
 
 function readTags(value: unknown): string[] | undefined {
-  if (!Array.isArray(value) || value.some((tag) => !readString(tag))) {
+  if (!Array.isArray(value)) {
     return undefined;
   }
 
-  return value.map((tag) => tag.trim());
+  return value
+    .map((tag) => readString(tag))
+    .filter((tag): tag is string => Boolean(tag))
+    .map((tag) => tag.trim());
 }
 
 export function sanitizeGame(value: unknown): Game | undefined {
