@@ -51,13 +51,13 @@ export function gameHasAllTags(
   );
 }
 
-export function compareTitles(first: Game, second: Game): number {
+function compareTitles(first: Game, second: Game): number {
   return (
     first.title.localeCompare(second.title) || first.id.localeCompare(second.id)
   );
 }
 
-export function compareNumbers(first: number, second: number): number {
+function compareNumbers(first: number, second: number): number {
   return first - second;
 }
 
