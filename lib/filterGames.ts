@@ -137,14 +137,12 @@ export function gameMatchesFilters(
   return true;
 }
 
-export function sortGames(games: readonly Game[], sort?: FilterSort): Game[] {
-  const sortableGames = [...games];
-
+function sortGames(games: Game[], sort?: FilterSort): Game[] {
   if (!sort) {
-    return sortableGames;
+    return games;
   }
 
-  return sortableGames.sort(sorters[sort]);
+  return games.sort(sorters[sort]);
 }
 
 export function filterGames(
@@ -163,7 +161,5 @@ export function filterGames(
     gameMatchesFilters(game, normalizedFilters),
   );
 
-  return normalizedFilters.sort
-    ? filteredGames.sort(sorters[normalizedFilters.sort])
-    : filteredGames;
+  return sortGames(filteredGames, normalizedFilters.sort);
 }
