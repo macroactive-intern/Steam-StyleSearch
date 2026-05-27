@@ -22,7 +22,6 @@ export interface GameFilters {
   platform?: string;
   genre?: string;
   tag?: string[];
-  tags?: string[];
   minRating?: number;
   maxRating?: number;
   yearFrom?: number;

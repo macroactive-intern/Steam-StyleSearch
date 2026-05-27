@@ -69,7 +69,7 @@ export function normalizeFilters(
       ? normalizeFilterValue(filters.platform)
       : undefined,
     genre: filters.genre ? normalizeFilterValue(filters.genre) : undefined,
-    tag: normalizeFilterValues([...(filters.tag ?? []), ...(filters.tags ?? [])]),
+    tag: normalizeFilterValues(filters.tag),
   };
 }
 
