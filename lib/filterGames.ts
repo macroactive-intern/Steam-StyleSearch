@@ -142,7 +142,7 @@ function sortGames(games: Game[], sort?: FilterSort): Game[] {
     return games;
   }
 
-  return games.sort(sorters[sort]);
+  return games.toSorted(sorters[sort]);
 }
 
 export function filterGames(
