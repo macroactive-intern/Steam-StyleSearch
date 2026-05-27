@@ -1,3 +1,4 @@
+import { orderRange } from "@/lib/range";
 import type { FilterSort, Game, GameFilters } from "@/types/game";
 
 export type FilterGamesFilters = GameFilters;
@@ -61,22 +62,11 @@ export function compareNumbers(first: number, second: number): number {
   return first - second;
 }
 
-function normalizeRange(
-  from: number | undefined,
-  to: number | undefined,
-): { from?: number; to?: number } {
-  if (typeof from === "number" && typeof to === "number" && from > to) {
-    return { from: to, to: from };
-  }
-
-  return { from, to };
-}
-
 export function normalizeFilters(
   filters: FilterGamesFilters,
 ): Required<Pick<FilterGamesFilters, "tag">> & FilterGamesFilters {
-  const ratingRange = normalizeRange(filters.minRating, filters.maxRating);
-  const yearRange = normalizeRange(filters.yearFrom, filters.yearTo);
+  const ratingRange = orderRange(filters.minRating, filters.maxRating);
+  const yearRange = orderRange(filters.yearFrom, filters.yearTo);
 
   return {
     ...filters,

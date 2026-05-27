@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { orderRange } from "@/lib/range";
 import type { FilterSort } from "@/types/game";
 
 const FILTER_KEYS = [
@@ -95,17 +96,6 @@ function readSort(params: SearchParamsReader): FilterSort | undefined {
   return VALID_SORTS.some((sort) => sort === value)
     ? (value as FilterSort)
     : undefined;
-}
-
-function orderRange(
-  from: number | undefined,
-  to: number | undefined,
-): { from?: number; to?: number } {
-  if (typeof from === "number" && typeof to === "number" && from > to) {
-    return { from: to, to: from };
-  }
-
-  return { from, to };
 }
 
 function normalizeRangeParams(
