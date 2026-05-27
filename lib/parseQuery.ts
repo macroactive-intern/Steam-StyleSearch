@@ -24,6 +24,10 @@ export interface ParseQueryExample {
   output: ParsedQuery;
 }
 
+type ParsedFilterPatch = Omit<Partial<ParsedQueryFilters>, "tags"> & {
+  tags?: string[];
+};
+
 const FIELD_PATTERN = /^([a-z]+):(.+)$/i;
 const RATING_PATTERN = /^([<>])(\d+(?:\.\d+)?)$/;
 const YEAR_PATTERN = /^\d{4}$/;
@@ -72,108 +76,112 @@ function tokenizeQuery(query: string): QueryToken[] {
   return tokens;
 }
 
-function parseRating(value: string, filters: ParsedQueryFilters) {
+function parseRating(value: string): ParsedFilterPatch | undefined {
   const match = value.match(RATING_PATTERN);
 
   if (!match) {
-    return false;
+    return undefined;
   }
 
   const [, operator, ratingValue] = match;
   const rating = Number(ratingValue);
 
   if (operator === ">") {
-    filters.minRating = rating;
-    return true;
+    return { minRating: rating };
   }
 
-  filters.maxRating = rating;
-  return true;
+  return { maxRating: rating };
 }
 
-function parseYear(value: string, filters: ParsedQueryFilters) {
+function parseYear(value: string): ParsedFilterPatch | undefined {
   if (YEAR_PATTERN.test(value)) {
     const year = Number(value);
-    filters.yearFrom = year;
-    filters.yearTo = year;
 
-    return true;
+    return { yearFrom: year, yearTo: year };
   }
 
   const rangeMatch = value.match(YEAR_RANGE_PATTERN);
 
   if (rangeMatch) {
     const [, fromYear, toYear] = rangeMatch;
-    filters.yearFrom = Number(fromYear);
-    filters.yearTo = Number(toYear);
 
-    return true;
+    return { yearFrom: Number(fromYear), yearTo: Number(toYear) };
   }
 
   const boundMatch = value.match(YEAR_BOUND_PATTERN);
 
   if (!boundMatch) {
-    return false;
+    return undefined;
   }
 
   const [, operator, yearValue] = boundMatch;
   const year = Number(yearValue);
 
   if (operator.startsWith(">")) {
-    filters.yearFrom = year;
-    return true;
+    return { yearFrom: year };
   }
 
-  filters.yearTo = year;
-  return true;
+  return { yearTo: year };
 }
 
-function applyFieldToken(token: QueryToken, filters: ParsedQueryFilters) {
+function parseFieldToken(token: QueryToken): ParsedFilterPatch | undefined {
   if (token.quoted) {
-    return false;
+    return undefined;
   }
 
   const match = token.value.match(FIELD_PATTERN);
 
   if (!match) {
-    return false;
+    return undefined;
   }
 
   const [, field, value] = match;
   const normalizedField = field.toLowerCase();
 
   if (normalizedField === "platform") {
-    filters.platform = value;
-    return true;
+    return { platform: value };
   }
 
   if (normalizedField === "genre") {
-    filters.genre = value;
-    return true;
+    return { genre: value };
   }
 
   if (normalizedField === "tag") {
-    filters.tags.push(value);
-    return true;
+    return { tags: [value] };
   }
 
   if (normalizedField === "rating") {
-    return parseRating(value, filters);
+    return parseRating(value);
   }
 
   if (normalizedField === "year") {
-    return parseYear(value, filters);
+    return parseYear(value);
   }
 
-  return false;
+  return undefined;
+}
+
+function mergeFilterPatch(
+  filters: ParsedQueryFilters,
+  patch: ParsedFilterPatch,
+): ParsedQueryFilters {
+  return {
+    ...filters,
+    ...patch,
+    tags: [...filters.tags, ...(patch.tags ?? [])],
+  };
 }
 
 export function parseQuery(query: string): ParsedQuery {
-  const filters = createEmptyFilters();
+  let filters = createEmptyFilters();
   const terms: string[] = [];
 
   for (const token of tokenizeQuery(query)) {
-    if (!applyFieldToken(token, filters)) {
+    const patch = parseFieldToken(token);
+
+    if (patch) {
+      filters = mergeFilterPatch(filters, patch);
+    } else {
       terms.push(token.value);
     }
   }
