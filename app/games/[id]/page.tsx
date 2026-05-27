@@ -3,9 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { getBackHref, RETURN_TO_PARAM } from "@/lib/gameNavigation";
 import { getGameById } from "@/lib/games";
 
 type GamePageParams = Promise<{ id: string }>;
+type GamePageSearchParams = Promise<{ [RETURN_TO_PARAM]?: string | string[] }>;
 
 export async function generateMetadata({
   params,
@@ -29,10 +31,13 @@ export async function generateMetadata({
 
 export default async function GamePage({
   params,
+  searchParams,
 }: {
   params: GamePageParams;
+  searchParams?: GamePageSearchParams;
 }) {
   const { id } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
   const game = getGameById(id);
 
   if (!game) {
@@ -42,7 +47,7 @@ export default async function GamePage({
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
       <Link
-        href="/"
+        href={getBackHref(resolvedSearchParams[RETURN_TO_PARAM])}
         className="text-sm font-medium text-muted-foreground hover:text-foreground"
       >
         Back to games

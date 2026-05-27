@@ -1,6 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import {
+  buildGameHref,
+  buildPathWithSearch,
+  type SearchParamsRecord,
+} from "@/lib/gameNavigation";
 import type { Game } from "@/types/game";
 
 const PAGE_SIZE = 24;
@@ -8,7 +13,7 @@ const PAGE_SIZE = 24;
 export interface PaginatedGameFallbackProps {
   games: readonly Game[];
   page: number;
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?: SearchParamsRecord;
 }
 
 function buildPageHref(
@@ -42,11 +47,17 @@ function clampPage(page: number, totalPages: number) {
   return Math.min(Math.max(page, 1), totalPages);
 }
 
-function FallbackGameCard({ game }: { game: Game }) {
+function FallbackGameCard({
+  game,
+  returnTo,
+}: {
+  game: Game;
+  returnTo: string;
+}) {
   return (
     <article>
       <Link
-        href={`/games/${game.id}`}
+        href={buildGameHref(game.id, returnTo)}
         className="block space-y-3 rounded-lg border bg-card p-4 text-card-foreground outline-none transition-colors hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <div className="relative aspect-[4/3] overflow-hidden rounded-md border bg-muted">
@@ -121,6 +132,7 @@ export function PaginatedGameFallback({
   const currentPage = clampPage(page, totalPages);
   const start = (currentPage - 1) * PAGE_SIZE;
   const visibleGames = games.slice(start, start + PAGE_SIZE);
+  const returnTo = buildPathWithSearch("/", searchParams);
 
   return (
     <section
@@ -139,7 +151,7 @@ export function PaginatedGameFallback({
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {visibleGames.map((game) => (
-          <FallbackGameCard key={game.id} game={game} />
+          <FallbackGameCard key={game.id} game={game} returnTo={returnTo} />
         ))}
       </div>
 

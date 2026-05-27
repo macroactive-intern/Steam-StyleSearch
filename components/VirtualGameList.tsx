@@ -5,7 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { buildGameHref, buildPathWithSearch } from "@/lib/gameNavigation";
 import { cn } from "@/lib/utils";
 import type { Game } from "@/types/game";
 
@@ -14,11 +16,11 @@ export interface VirtualGameListProps {
   className?: string;
 }
 
-function GameCard({ game }: { game: Game }) {
+function GameCard({ game, returnTo }: { game: Game; returnTo: string }) {
   return (
     <article>
       <Link
-        href={`/games/${game.id}`}
+        href={buildGameHref(game.id, returnTo)}
         className="grid min-h-44 gap-4 rounded-lg border bg-card p-4 text-card-foreground shadow-xs outline-none transition-colors hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring/50 sm:grid-cols-[160px_1fr]"
       >
         <div className="relative min-h-36 overflow-hidden rounded-md border bg-muted sm:h-full">
@@ -66,6 +68,9 @@ function GameCard({ game }: { game: Game }) {
 
 export function VirtualGameList({ games, className }: VirtualGameListProps) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const returnTo = buildPathWithSearch(pathname, searchParams);
   const count = games.length;
   // React Compiler flags TanStack Virtual because it exposes live measurement methods.
   // eslint-disable-next-line react-hooks/incompatible-library -- useVirtualizer is required for windowed rendering.
@@ -125,7 +130,7 @@ export function VirtualGameList({ games, className }: VirtualGameListProps) {
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
               >
-                <GameCard game={game} />
+                <GameCard game={game} returnTo={returnTo} />
               </div>
             );
           })}
