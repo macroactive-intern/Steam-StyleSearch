@@ -152,15 +152,16 @@ export function FilterPanel({
         </div>
 
         <div className="flex items-end">
-          <Label className="flex h-9 items-center gap-2 rounded-lg border px-3">
+          <div className="flex h-9 items-center gap-2 rounded-lg border px-3">
             <Checkbox
+              id="filter-featured"
               checked={filters.featured === true}
               onCheckedChange={(checked) =>
                 setters.setFeatured(checked === true ? true : undefined)
               }
             />
-            Featured
-          </Label>
+            <Label htmlFor="filter-featured">Featured</Label>
+          </div>
         </div>
       </div>
 
@@ -235,17 +236,23 @@ export function FilterPanel({
       <fieldset className="mt-4">
         <legend className="mb-2 text-sm font-medium">Tags</legend>
         <div className="grid max-h-56 gap-2 overflow-auto rounded-lg border p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {tags.map((tag) => (
-            <Label
+          {tags.map((tag, index) => (
+            <div
               key={tag}
-              className="rounded-md px-1 py-1 text-sm font-normal"
+              className="flex items-center gap-2 rounded-md px-1 py-1"
             >
               <Checkbox
+                id={`filter-tag-${index}`}
                 checked={selectedTags.has(tag)}
                 onCheckedChange={(checked) => toggleTag(tag, checked === true)}
               />
-              {tag}
-            </Label>
+              <Label
+                htmlFor={`filter-tag-${index}`}
+                className="text-sm font-normal"
+              >
+                {tag}
+              </Label>
+            </div>
           ))}
         </div>
       </fieldset>
