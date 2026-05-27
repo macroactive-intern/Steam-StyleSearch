@@ -101,6 +101,7 @@ export function VirtualGameList({ games, className }: VirtualGameListProps) {
       </p>
 
       <div
+        data-game-results-scroll
         ref={parentRef}
         role="region"
         aria-label="Game results"

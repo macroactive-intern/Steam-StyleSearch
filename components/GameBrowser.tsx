@@ -86,8 +86,12 @@ export function GameBrowser({
         </h2>
       </header>
 
+      {/* Keep overflow classes off this shell so the sidebar can stick to the page scroll root. */}
       <div className="grid flex-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+        <aside
+          data-sticky-filter-sidebar
+          className="space-y-4 lg:sticky lg:top-6 lg:self-start"
+        >
           <SavedFilterPresets />
           <FilterPanel
             platforms={platforms}
