@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Star } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Badge } from "@/components/ui/badge";
@@ -15,45 +16,50 @@ export interface VirtualGameListProps {
 
 function GameCard({ game }: { game: Game }) {
   return (
-    <article className="grid min-h-44 gap-4 rounded-lg border bg-card p-4 text-card-foreground shadow-xs sm:grid-cols-[160px_1fr]">
-      <div className="relative min-h-36 overflow-hidden rounded-md border bg-muted sm:h-full">
-        <Image
-          src={game.coverImage}
-          alt={`${game.title} cover`}
-          fill
-          sizes="160px"
-          unoptimized
-          className="object-cover"
-        />
-      </div>
-
-      <div className="min-w-0 space-y-3">
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-0">
-            <h3 className="truncate text-base font-semibold">{game.title}</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {game.platform} · {game.genre} · {game.releaseYear}
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-1 rounded-md border px-2 py-1 text-sm font-medium">
-            <Star aria-hidden="true" className="size-4 fill-current" />
-            {game.rating.toFixed(1)}
-          </div>
+    <article>
+      <Link
+        href={`/games/${game.id}`}
+        className="grid min-h-44 gap-4 rounded-lg border bg-card p-4 text-card-foreground shadow-xs outline-none transition-colors hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring/50 sm:grid-cols-[160px_1fr]"
+      >
+        <div className="relative min-h-36 overflow-hidden rounded-md border bg-muted sm:h-full">
+          <Image
+            src={game.coverImage}
+            alt=""
+            fill
+            sizes="160px"
+            unoptimized
+            className="object-cover"
+          />
         </div>
 
-        <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
-          {game.description}
-        </p>
+        <div className="min-w-0 space-y-3">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h3 className="truncate text-base font-semibold">{game.title}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {game.platform} | {game.genre} | {game.releaseYear}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-1 rounded-md border px-2 py-1 text-sm font-medium">
+              <Star aria-hidden="true" className="size-4 fill-current" />
+              {game.rating.toFixed(1)}
+            </div>
+          </div>
 
-        <div className="flex flex-wrap gap-2">
-          {game.featured ? <Badge>Featured</Badge> : null}
-          {game.tags.slice(0, 4).map((tag) => (
-            <Badge key={tag} variant="outline">
-              {tag}
-            </Badge>
-          ))}
+          <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
+            {game.description}
+          </p>
+
+          <div className="flex flex-wrap gap-2">
+            {game.featured ? <Badge>Featured</Badge> : null}
+            {game.tags.slice(0, 4).map((tag) => (
+              <Badge key={tag} variant="outline">
+                {tag}
+              </Badge>
+            ))}
+          </div>
         </div>
-      </div>
+      </Link>
     </article>
   );
 }

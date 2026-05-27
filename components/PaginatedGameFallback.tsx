@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import type { Game } from "@/types/game";
 
@@ -43,39 +44,44 @@ function clampPage(page: number, totalPages: number) {
 
 function FallbackGameCard({ game }: { game: Game }) {
   return (
-    <article className="space-y-3 rounded-lg border bg-card p-4 text-card-foreground">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-md border bg-muted">
-        <Image
-          src={game.coverImage}
-          alt={`${game.title} cover`}
-          fill
-          sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
-          unoptimized
-          className="object-cover"
-        />
-      </div>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-semibold">{game.title}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {game.platform} | {game.genre} | {game.releaseYear}
-          </p>
+    <article>
+      <Link
+        href={`/games/${game.id}`}
+        className="block space-y-3 rounded-lg border bg-card p-4 text-card-foreground outline-none transition-colors hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        <div className="relative aspect-[4/3] overflow-hidden rounded-md border bg-muted">
+          <Image
+            src={game.coverImage}
+            alt=""
+            fill
+            sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+            unoptimized
+            className="object-cover"
+          />
         </div>
-        <span className="rounded-md border px-2 py-1 text-sm font-medium">
-          {game.rating.toFixed(1)}
-        </span>
-      </div>
-      <p className="text-sm leading-6 text-muted-foreground">
-        {game.description}
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {game.featured ? <Badge>Featured</Badge> : null}
-        {game.tags.slice(0, 3).map((tag) => (
-          <Badge key={tag} variant="outline">
-            {tag}
-          </Badge>
-        ))}
-      </div>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="font-semibold">{game.title}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {game.platform} | {game.genre} | {game.releaseYear}
+            </p>
+          </div>
+          <span className="rounded-md border px-2 py-1 text-sm font-medium">
+            {game.rating.toFixed(1)}
+          </span>
+        </div>
+        <p className="text-sm leading-6 text-muted-foreground">
+          {game.description}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {game.featured ? <Badge>Featured</Badge> : null}
+          {game.tags.slice(0, 3).map((tag) => (
+            <Badge key={tag} variant="outline">
+              {tag}
+            </Badge>
+          ))}
+        </div>
+      </Link>
     </article>
   );
 }

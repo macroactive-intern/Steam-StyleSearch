@@ -35,6 +35,12 @@ export function getGames(filters: GetGamesOptions = {}): Game[] {
   return filterGames(games, toFilterGamesFilters(filters)).map(copyGame);
 }
 
+export function getGameById(id: string): Game | undefined {
+  const game = games.find((game) => game.id === id);
+
+  return game ? copyGame(game) : undefined;
+}
+
 export function getPlatforms(): string[] {
   return uniqueSorted(games.map((game) => game.platform));
 }
