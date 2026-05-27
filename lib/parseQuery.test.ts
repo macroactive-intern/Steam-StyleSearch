@@ -25,6 +25,15 @@ describe("parseQuery", () => {
     expect(result.terms).toEqual([]);
   });
 
+  it("parses multi-word quoted tag values as tag filters", () => {
+    const result = parseQuery('tag:"dark souls" tag:"open world"');
+
+    expect(result.filters).toEqual({
+      tags: ["dark souls", "open world"],
+    });
+    expect(result.terms).toEqual([]);
+  });
+
   it("parses minimum rating filters", () => {
     const result = parseQuery("rating:>8");
 

@@ -43,13 +43,13 @@ function createEmptyFilters(): ParsedQueryFilters {
 function tokenizeQuery(query: string): QueryToken[] {
   const tokens: QueryToken[] = [];
   let current = "";
-  let quoted = false;
+  let tokenStartedWithQuote = false;
   let inQuote = false;
 
   for (const character of query) {
     if (character === '"') {
       if (!current) {
-        quoted = true;
+        tokenStartedWithQuote = true;
       }
 
       inQuote = !inQuote;
@@ -58,11 +58,11 @@ function tokenizeQuery(query: string): QueryToken[] {
 
     if (/\s/.test(character) && !inQuote) {
       if (current) {
-        tokens.push({ value: current, quoted });
+        tokens.push({ value: current, quoted: tokenStartedWithQuote });
       }
 
       current = "";
-      quoted = false;
+      tokenStartedWithQuote = false;
       continue;
     }
 
@@ -70,7 +70,7 @@ function tokenizeQuery(query: string): QueryToken[] {
   }
 
   if (current) {
-    tokens.push({ value: current, quoted });
+    tokens.push({ value: current, quoted: tokenStartedWithQuote });
   }
 
   return tokens;

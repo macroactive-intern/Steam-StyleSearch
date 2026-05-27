@@ -29,4 +29,18 @@ describe("filtersToSearchValue", () => {
     });
     expect(parsed.terms).toEqual(["dark souls"]);
   });
+
+  it("round-trips multi-word tag filters without demoting them to search terms", () => {
+    const filters: UrlGameFilters = {
+      tag: ["dark souls"],
+    };
+
+    const parsed = parseQuery(filtersToSearchValue(filters));
+
+    expect(filtersToSearchValue(filters)).toBe('tag:"dark souls"');
+    expect(parsed.filters).toEqual({
+      tags: ["dark souls"],
+    });
+    expect(parsed.terms).toEqual([]);
+  });
 });
