@@ -24,6 +24,8 @@ const VALID_SORTS = [
   "year_desc",
 ] as const satisfies readonly FilterSort[];
 
+const PAGE_PARAM = "page";
+
 export type GameFilterKey = (typeof FILTER_KEYS)[number];
 
 export interface UrlGameFilters {
@@ -130,6 +132,8 @@ export function applyGameFilterUpdates(
 ): string {
   const params = new URLSearchParams(currentSearch);
 
+  params.delete(PAGE_PARAM);
+
   for (const [key, value] of Object.entries(updates)) {
     applyParam(params, key as GameFilterKey, value);
   }
@@ -141,6 +145,7 @@ export function clearGameFilterParams(currentSearch: string): string {
   const params = new URLSearchParams(currentSearch);
 
   FILTER_KEYS.forEach((key) => params.delete(key));
+  params.delete(PAGE_PARAM);
 
   return params.toString();
 }

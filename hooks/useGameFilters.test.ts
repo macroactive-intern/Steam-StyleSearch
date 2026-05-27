@@ -36,7 +36,7 @@ describe("useGameFilters URL helpers", () => {
     expect(filters.sort).toBeUndefined();
   });
 
-  it("applies updates while preserving unrelated params", () => {
+  it("applies updates while preserving unrelated params and resetting pagination", () => {
     const query = applyGameFilterUpdates("utm=campaign&tag=rpg&page=2", {
       platform: "Nintendo Switch",
       tag: ["cozy", "farming"],
@@ -44,7 +44,7 @@ describe("useGameFilters URL helpers", () => {
     });
 
     expect(new URLSearchParams(query).get("utm")).toBe("campaign");
-    expect(new URLSearchParams(query).get("page")).toBe("2");
+    expect(new URLSearchParams(query).get("page")).toBeNull();
     expect(new URLSearchParams(query).get("platform")).toBe("Nintendo Switch");
     expect(new URLSearchParams(query).get("minRating")).toBe("8");
     expect(new URLSearchParams(query).getAll("tag")).toEqual([
@@ -53,12 +53,12 @@ describe("useGameFilters URL helpers", () => {
     ]);
   });
 
-  it("clears only known filter params", () => {
+  it("clears filters and pagination while preserving unrelated params", () => {
     const query = clearGameFilterParams(
       "utm=campaign&q=souls&tag=rpg&platform=PC&page=3",
     );
 
-    expect(query).toBe("utm=campaign&page=3");
+    expect(query).toBe("utm=campaign");
   });
 
   it("empty filter updates clear every filter represented by SearchInput", () => {
