@@ -8,91 +8,14 @@ import {
   RELEASE_YEAR_RANGE,
   TAGS,
 } from "@/lib/games";
+import {
+  getFallbackFilters,
+  getPageNumber,
+  type ResolvedPageSearchParams,
+} from "@/lib/pageSearchParams";
 import { JS_ENHANCEMENT_SCRIPT } from "@/lib/progressiveEnhancement";
-import type { FilterSort, GameFilters } from "@/types/game";
 
-type PageSearchParams = Promise<Record<string, string | string[] | undefined>>;
-type ResolvedSearchParams = Awaited<PageSearchParams>;
-
-const SORT_VALUES = new Set<FilterSort>([
-  "rating_desc",
-  "rating_asc",
-  "title_asc",
-  "year_desc",
-]);
-
-function readFirst(searchParams: ResolvedSearchParams, key: string) {
-  const value = searchParams[key];
-
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function readAll(searchParams: ResolvedSearchParams, key: string) {
-  const value = searchParams[key];
-
-  if (Array.isArray(value)) {
-    return value.filter(Boolean);
-  }
-
-  return value ? [value] : [];
-}
-
-function readNumber(searchParams: ResolvedSearchParams, key: string) {
-  const value = readFirst(searchParams, key);
-
-  if (!value) {
-    return undefined;
-  }
-
-  const parsed = Number(value);
-
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
-
-function readBoolean(searchParams: ResolvedSearchParams, key: string) {
-  const value = readFirst(searchParams, key);
-
-  if (value === "true") {
-    return true;
-  }
-
-  if (value === "false") {
-    return false;
-  }
-
-  return undefined;
-}
-
-function readSort(searchParams: ResolvedSearchParams): FilterSort | undefined {
-  const sort = readFirst(searchParams, "sort");
-
-  return SORT_VALUES.has(sort as FilterSort) ? (sort as FilterSort) : undefined;
-}
-
-function getPageNumber(searchParams: ResolvedSearchParams) {
-  const page = searchParams.page;
-  const pageValue = Array.isArray(page) ? page[0] : page;
-  const parsedPage = Number(pageValue);
-
-  return Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
-}
-
-function getFallbackFilters(
-  searchParams: ResolvedSearchParams,
-): GameFilters {
-  return {
-    q: readFirst(searchParams, "q"),
-    platform: readFirst(searchParams, "platform"),
-    genre: readFirst(searchParams, "genre"),
-    tag: readAll(searchParams, "tag"),
-    minRating: readNumber(searchParams, "minRating"),
-    maxRating: readNumber(searchParams, "maxRating"),
-    yearFrom: readNumber(searchParams, "yearFrom"),
-    yearTo: readNumber(searchParams, "yearTo"),
-    featured: readBoolean(searchParams, "featured"),
-    sort: readSort(searchParams),
-  };
-}
+type PageSearchParams = Promise<ResolvedPageSearchParams>;
 
 function GameBrowserSuspenseFallback() {
   return (
