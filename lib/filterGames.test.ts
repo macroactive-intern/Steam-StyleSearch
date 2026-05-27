@@ -110,6 +110,12 @@ describe("filterGames", () => {
     expect(ids(result)).toEqual(["ember-quest"]);
   });
 
+  it("matches tag filters case-insensitively", () => {
+    const result = filterGames(games, { tag: ["RPG", "OPEN-WORLD"] });
+
+    expect(ids(result)).toEqual(["ember-quest"]);
+  });
+
   it("filters by rating minimum and maximum", () => {
     const result = filterGames(games, { minRating: 7, maxRating: 8.5 });
 

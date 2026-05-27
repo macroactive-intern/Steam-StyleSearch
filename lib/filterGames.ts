@@ -44,8 +44,10 @@ export function gameHasAllTags(
     return true;
   }
 
+  const normalizedGameTags = new Set(gameTags.map(normalizeFilterValue));
+
   return requiredTags.every((requiredTag) =>
-    gameTags.some((gameTag) => normalizeFilterValue(gameTag) === requiredTag),
+    normalizedGameTags.has(requiredTag),
   );
 }
 
